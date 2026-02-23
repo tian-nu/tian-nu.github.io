@@ -1,0 +1,123 @@
+---
+layout: default
+---
+
+<article class="post-container">
+  <!-- 文章头部 -->
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title }}</h1>
+    
+    <div class="post-meta">
+      <span class="post-date">
+        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+          <path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+        </svg>
+        {{ page.date | date: "%Y年%m月%d日" }}
+      </span>
+      
+      {% if page.categories.size > 0 %}
+        <span class="post-category">
+          <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M12 2l-5.5 9h11z"/>
+          </svg>
+          {% for category in page.categories %}
+            <a href="/categories/#{{ category }}">{{ category }}</a>{% unless forloop.last %}, {% endunless %}
+          {% endfor %}
+        </span>
+      {% endif %}
+      
+      <span class="post-reading-time">
+        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+          <path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+        </svg>
+        {% assign words = page.content | number_of_words %}
+        {% if words < 360 %}1分钟{% else %}{{ words | divided_by:180 }}分钟{% endif %}阅读
+      </span>
+    </div>
+    
+    {% if page.tags.size > 0 %}
+      <div class="post-tags">
+        {% for tag in page.tags %}
+          <a href="/tags/#{{ tag }}" class="tag">#{{ tag }}</a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </header>
+  
+  <!-- 文章封面图 -->
+  {% if page.cover %}
+    <div class="post-cover">
+      <img src="{{ page.cover | relative_url }}" alt="{{ page.title }}">
+    </div>
+  {% endif %}
+  
+  <!-- 文章目录 -->
+  {% if page.toc != false %}
+    <div class="toc-container">
+      <h4 class="toc-title">目录</h4>
+      <nav class="toc-nav" id="toc"></nav>
+    </div>
+  {% endif %}
+  
+  <!-- 文章内容 -->
+  <div class="post-content" id="post-content">
+    {{ content }}
+  </div>
+  
+  <!-- 文章底部 -->
+  <footer class="post-footer">
+    <!-- 分享按钮 -->
+    <div class="post-share">
+      <span>分享到：</span>
+      <button class="share-btn" onclick="shareToWeibo()" title="微博">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.739 5.443zM9.05 17.219c-.384.616-1.208.884-1.829.602-.612-.279-.793-.991-.406-1.593.379-.595 1.176-.861 1.793-.601.622.263.82.972.442 1.592zm1.27-1.627c-.141.237-.449.353-.689.253-.236-.09-.313-.361-.177-.586.138-.227.436-.346.672-.24.239.09.315.36.194.573zm.176-2.719c-1.893-.493-4.033.45-4.857 2.118-.836 1.704-.026 3.591 1.886 4.21 1.983.64 4.318-.341 5.132-2.179.8-1.793-.201-3.642-2.161-4.149zm7.563-1.224c-.346-.105-.579-.18-.405-.649.386-1.031.425-1.922.003-2.555-.789-1.187-2.924-1.123-5.383-.032 0 0-.768.334-.571-.271.381-1.204.324-2.21-.268-2.79-1.344-1.32-4.918.045-7.99 3.052C1.904 10.491 0 12.686 0 14.559c0 3.59 4.613 5.773 9.127 5.773 5.916 0 9.856-3.44 9.856-6.175 0-1.649-1.389-2.583-2.894-3.008zM20.342 7.215c-1.12-1.237-2.773-1.695-4.307-1.355-.389.088-.636.466-.548.855.088.389.466.636.855.548.1-.023.201-.035.303-.035.958 0 1.859.455 2.429 1.184.57.729.75 1.659.495 2.54-.104.383.122.778.505.882.383.104.778-.122.882-.505.38-1.361.108-2.808-.614-4.014zM23.07 6.604c-1.807-1.998-4.48-2.743-6.963-2.193-.478.108-.777.583-.669 1.061.108.478.583.777 1.061.669 1.91-.432 3.905.12 5.223 1.578 1.318 1.458 1.673 3.447 1.024 5.214-.154.427.066.9.493 1.054.427.154.9-.066 1.054-.493.86-2.384.387-5.07-1.223-6.89z"/></svg>
+      </button>
+      <button class="share-btn" onclick="copyLink()" title="复制链接">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+      </button>
+    </div>
+    
+    <!-- 上一篇/下一篇 -->
+    <nav class="post-nav">
+      {% if page.previous %}
+        <a href="{{ page.previous.url | relative_url }}" class="post-nav-prev">
+          <span class="post-nav-label">← 上一篇</span>
+          <span class="post-nav-title">{{ page.previous.title }}</span>
+        </a>
+      {% endif %}
+      
+      {% if page.next %}
+        <a href="{{ page.next.url | relative_url }}" class="post-nav-next">
+          <span class="post-nav-label">下一篇 →</span>
+          <span class="post-nav-title">{{ page.next.title }}</span>
+        </a>
+      {% endif %}
+    </nav>
+    
+    <!-- 相关文章 -->
+    {% assign related_posts = site.related_posts | default: site.posts %}
+    {% if related_posts.size > 0 %}
+      <div class="related-posts">
+        <h4 class="related-title">相关文章</h4>
+        <div class="related-list">
+          {% for post in related_posts limit:3 %}
+            {% unless post.url == page.url %}
+              <a href="{{ post.url | relative_url }}" class="related-item">
+                <span class="related-item-title">{{ post.title }}</span>
+                <span class="related-item-date">{{ post.date | date: "%Y-%m-%d" }}</span>
+              </a>
+            {% endunless %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </footer>
+  
+  <!-- 评论区 -->
+  {% if page.comments != false %}
+    <section class="comments-section">
+      <h4 class="comments-title">评论</h4>
+      <div class="giscus"></div>
+    </section>
+  {% endif %}
+</article>

@@ -46,7 +46,7 @@ title: 备忘录
       </div>
       <div class="form-group">
         <label>截止日期：</label>
-        <input type="date" id="edit-date" class="memo-date" readonly>
+        <input type="date" id="edit-date" class="memo-date">
         <button onclick="setTodayDate()" class="btn-small">今天</button>
         <button onclick="clearEditDate()" class="btn-small">清除</button>
       </div>
@@ -94,21 +94,9 @@ title: 备忘录
     </div>
   </div>
   
-  <!-- 快速添加 (仅管理员可见) -->
+  <!-- 新建按钮 (仅管理员可见) -->
   <div class="memo-add" id="memo-add-section" style="display: none;">
-    <input type="text" id="memo-input" placeholder="添加新事项..." class="memo-input">
-    <select id="memo-category" class="memo-select">
-      <option value="todo">待办</option>
-      <option value="learning">学习</option>
-      <option value="idea">想法</option>
-      <option value="reminder">提醒</option>
-      <option value="work">工作</option>
-      <option value="life">生活</option>
-    </select>
-    <input type="date" id="memo-date" class="memo-date" readonly>
-    <button onclick="setMemoToday()" class="btn-small">今天</button>
-    <button onclick="clearMemoDate()" class="btn-small">清除</button>
-    <button onclick="addMemo()" class="memo-btn">添加</button>
+    <a href="/memo-new" class="memo-btn memo-new-btn">+ 新建备忘录</a>
   </div>
   
   <!-- 搜索和筛选 -->
@@ -261,24 +249,6 @@ function init() {
   // 加载备忘录数据
   loadMemos();
   
-  // 设置默认日期为今天
-  const dateInput = document.getElementById('memo-date');
-  if (dateInput) {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
-  }
-  
-  // 回车添加
-  const memoInput = document.getElementById('memo-input');
-  if (memoInput) {
-    memoInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') addMemo();
-    });
-  }
-  
   // 登录框回车
   const pwdInput = document.getElementById('admin-password');
   if (pwdInput) {
@@ -411,43 +381,6 @@ function saveMemos() {
   localStorage.setItem('memos_data', JSON.stringify(data));
 }
 
-// 添加备忘录
-function addMemo() {
-  if (!isAdmin) {
-    showToast('请先登录管理员账号', 'warning');
-    return;
-  }
-  
-  const input = document.getElementById('memo-input');
-  const category = document.getElementById('memo-category');
-  const dateInput = document.getElementById('memo-date');
-  const text = input.value.trim();
-  
-  if (!text) {
-    input.focus();
-    return;
-  }
-  
-  const memo = {
-    id: 'memo-' + Date.now(),
-    text: text,
-    category: category.value,
-    completed: false,
-    createdAt: new Date().toISOString(),
-    deadline: dateInput.value || null
-  };
-  
-  memos.unshift(memo);
-  saveMemos();
-  
-  input.value = '';
-  dateInput.valueAsDate = new Date();
-  
-  renderMemos();
-  updateStats();
-  updateTabCounts();
-}
-
 // 渲染备忘录
 function renderMemos() {
   const list = document.getElementById('memo-list');
@@ -494,7 +427,7 @@ function renderMemos() {
       <div class="memo-item ${memo.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-id="${memo.id}">
         <div class="memo-checkbox">
           <input type="checkbox" id="${checkboxId}" ${memo.completed ? 'checked' : ''} 
-                 onchange="toggleComplete('${memo.id}')">
+                 onclick="return toggleComplete('${memo.id}', event)">
           <label for="${checkboxId}"></label>
         </div>
         <div class="memo-content">
@@ -515,10 +448,11 @@ function renderMemos() {
 }
 
 // 切换完成状态
-function toggleComplete(id) {
+function toggleComplete(id, event) {
   if (!isAdmin) {
+    event.preventDefault();
     showTooltip('非管理员无法更改');
-    return;
+    return false;
   }
   
   const memo = memos.find(m => m.id === id);
@@ -529,6 +463,7 @@ function toggleComplete(id) {
     updateStats();
     updateTabCounts();
   }
+  return true;
 }
 
 // 显示小提示（跟随鼠标）
@@ -663,19 +598,6 @@ function setTodayDate() {
 }
 
 // 快速添加区设为今天
-function setMemoToday() {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  document.getElementById('memo-date').value = `${yyyy}-${mm}-${dd}`;
-}
-
-// 清除快速添加区日期
-function clearMemoDate() {
-  document.getElementById('memo-date').value = '';
-}
-
 // 显示添加标签弹窗
 let selectedColor = '#f59e0b';
 function showAddCategory() {
@@ -803,8 +725,15 @@ function clearAllMemos() {
 
 // 格式化日期
 function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  return `${date.getMonth() + 1}/${date.getDate()}`;
+  const date = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  const isCurrentYear = date.getFullYear() === now.getFullYear();
+  
+  if (isCurrentYear) {
+    return `${date.getMonth() + 1}月${date.getDate()}日`;
+  } else {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+  }
 }
 
 // 格式化时间
@@ -1155,6 +1084,12 @@ document.addEventListener('DOMContentLoaded', function() {
 .memo-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+.memo-new-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
 }
 
 /* 工具栏 */

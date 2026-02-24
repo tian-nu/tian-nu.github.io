@@ -10,6 +10,17 @@ title: 备忘录
   <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
 </div>
 
+<!-- 自定义提示 -->
+<div id="toast" class="toast"></div>
+
+<!-- 排版切换 -->
+<div class="layout-toggle">
+  <button onclick="toggleLayout()" class="layout-btn" title="切换排版">
+    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 6h4v2H4zm0 5h4v2H4zm0 5h4v2H4zm6-10h10v2H10zm0 5h10v2H10zm0 5h10v2H10z"/></svg>
+    <span id="layout-text">紧凑</span>
+  </button>
+</div>
+
 <div class="memo-container">
   <p class="memo-intro">记录待办事项、学习计划和重要提醒。</p>
   
@@ -213,9 +224,9 @@ function login() {
     localStorage.setItem('admin_login_time', Date.now().toString());
     hideLoginModal();
     updateAdminUI();
-    alert('登录成功！');
+    showToast('登录成功！', 'success');
   } else {
-    alert('密码错误！');
+    showToast('密码错误！', 'error');
   }
 }
 
@@ -280,7 +291,7 @@ function saveMemos() {
 // 添加备忘录
 function addMemo() {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     return;
   }
   
@@ -383,7 +394,7 @@ function renderMemos() {
 // 切换完成状态
 function toggleComplete(id) {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     renderMemos();
     return;
   }
@@ -401,7 +412,7 @@ function toggleComplete(id) {
 // 删除备忘录
 function deleteMemo(id) {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     return;
   }
   
@@ -416,7 +427,7 @@ function deleteMemo(id) {
 // 编辑备忘录
 function editMemo(id) {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     return;
   }
   
@@ -474,7 +485,7 @@ function updateTabCounts() {
 // 导出数据
 function exportMemos() {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     return;
   }
   
@@ -495,7 +506,7 @@ function exportMemos() {
 // 清空全部
 function clearAllMemos() {
   if (!isAdmin) {
-    alert('请先登录管理员账号');
+    showToast('请先登录管理员账号', 'warning');
     return;
   }
   
@@ -534,11 +545,106 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// 显示提示
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
+}
+
+// 切换排版
+let isCompact = false;
+function toggleLayout() {
+  isCompact = !isCompact;
+  const container = document.querySelector('.memo-container');
+  const btnText = document.getElementById('layout-text');
+  
+  if (isCompact) {
+    container.classList.add('compact');
+    btnText.textContent = '宽松';
+    localStorage.setItem('memo_layout', 'compact');
+  } else {
+    container.classList.remove('compact');
+    btnText.textContent = '紧凑';
+    localStorage.setItem('memo_layout', 'normal');
+  }
+}
+
+// 加载排版设置
+function loadLayoutSetting() {
+  const saved = localStorage.getItem('memo_layout');
+  if (saved === 'compact') {
+    isCompact = true;
+    document.querySelector('.memo-container')?.classList.add('compact');
+    document.getElementById('layout-text').textContent = '宽松';
+  }
+}
+
 // 初始化
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+  init();
+  loadLayoutSetting();
+});
 </script>
 
 <style>
+/* Toast 提示 */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+.toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+/* 排版切换按钮 */
+.layout-toggle {
+  position: fixed;
+  top: 80px;
+  right: 200px;
+  z-index: 100;
+}
+
+.layout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.layout-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 .memo-container {
   max-width: 900px;
   margin: 0 auto;
@@ -1012,6 +1118,82 @@ document.addEventListener('DOMContentLoaded', init);
   color: #ef4444;
 }
 
+/* 紧凑排版 */
+.memo-container.compact .memo-list {
+  gap: 0.5rem;
+}
+
+.memo-container.compact .memo-item {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  gap: 0.75rem;
+}
+
+.memo-container.compact .memo-text {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.memo-container.compact .memo-meta {
+  gap: 0.5rem;
+}
+
+.memo-container.compact .memo-tag {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+}
+
+.memo-container.compact .memo-deadline,
+.memo-container.compact .memo-time {
+  font-size: 0.75rem;
+}
+
+.memo-container.compact .memo-edit,
+.memo-container.compact .memo-delete {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+}
+
+.memo-container.compact .memo-stats {
+  padding: 1rem;
+  gap: 0.75rem;
+}
+
+.memo-container.compact .stat-number {
+  font-size: 1.5rem;
+}
+
+.memo-container.compact .stat-label {
+  font-size: 0.75rem;
+}
+
+.memo-container.compact .memo-tabs {
+  gap: 0.4rem;
+}
+
+.memo-container.compact .memo-tab {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.memo-container.compact .tab-count {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.3rem;
+}
+
+.memo-container.compact .memo-add {
+  gap: 0.5rem;
+}
+
+.memo-container.compact .memo-input,
+.memo-container.compact .memo-select,
+.memo-container.compact .memo-date,
+.memo-container.compact .memo-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
   .memo-add {
     flex-direction: column;
@@ -1045,6 +1227,29 @@ document.addEventListener('DOMContentLoaded', init);
   
   .login-actions {
     flex-direction: column;
+  }
+  
+  .admin-status {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }
+  
+  .layout-toggle {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .toast {
+    top: 20px;
+    width: 80%;
+    text-align: center;
   }
 }
 </style>

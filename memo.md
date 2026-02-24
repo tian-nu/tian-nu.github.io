@@ -46,12 +46,25 @@ title: 备忘录
       </div>
       <div class="form-group">
         <label>截止日期：</label>
-        <input type="date" id="edit-date" class="memo-date">
+        <input type="date" id="edit-date" class="memo-date" readonly>
+        <button onclick="setTodayDate()" class="btn-small">今天</button>
         <button onclick="clearEditDate()" class="btn-small">清除</button>
       </div>
       <div class="login-actions">
         <button onclick="saveEditMemo()" class="login-submit">保存</button>
         <button onclick="hideEditModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 删除确认弹窗 -->
+  <div id="delete-modal" class="login-modal" style="display: none;">
+    <div class="login-content" style="max-width: 350px;">
+      <h3>确认删除</h3>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">确定要删除这条备忘录吗？</p>
+      <div class="login-actions">
+        <button onclick="confirmDelete()" class="login-submit" style="background: linear-gradient(135deg, #ef4444, #dc2626);">删除</button>
+        <button onclick="hideDeleteModal()" class="login-cancel">取消</button>
       </div>
     </div>
   </div>
@@ -92,7 +105,9 @@ title: 备忘录
       <option value="work">工作</option>
       <option value="life">生活</option>
     </select>
-    <input type="date" id="memo-date" class="memo-date">
+    <input type="date" id="memo-date" class="memo-date" readonly>
+    <button onclick="setMemoToday()" class="btn-small">今天</button>
+    <button onclick="clearMemoDate()" class="btn-small">清除</button>
     <button onclick="addMemo()" class="memo-btn">添加</button>
   </div>
   
@@ -479,7 +494,7 @@ function renderMemos() {
       <div class="memo-item ${memo.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-id="${memo.id}">
         <div class="memo-checkbox">
           <input type="checkbox" id="${checkboxId}" ${memo.completed ? 'checked' : ''} 
-                 onchange="toggleComplete('${memo.id}')" ${!isAdmin ? 'disabled' : ''}>
+                 onchange="toggleComplete('${memo.id}')">
           <label for="${checkboxId}"></label>
         </div>
         <div class="memo-content">
@@ -502,8 +517,7 @@ function renderMemos() {
 // 切换完成状态
 function toggleComplete(id) {
   if (!isAdmin) {
-    showToast('请先登录管理员账号', 'warning');
-    renderMemos();
+    showTooltip('非管理员无法更改');
     return;
   }
   
@@ -517,19 +531,68 @@ function toggleComplete(id) {
   }
 }
 
+// 显示小提示（跟随鼠标）
+function showTooltip(message) {
+  const tooltip = document.createElement('div');
+  tooltip.className = 'mini-tooltip';
+  tooltip.textContent = message;
+  tooltip.style.cssText = `
+    position: fixed;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 10000;
+    pointer-events: none;
+    white-space: nowrap;
+  `;
+  document.body.appendChild(tooltip);
+  
+  // 定位到鼠标位置
+  const x = event.clientX;
+  const y = event.clientY;
+  tooltip.style.left = (x - tooltip.offsetWidth / 2) + 'px';
+  tooltip.style.top = (y - tooltip.offsetHeight - 10) + 'px';
+  
+  // 1.5秒后消失
+  setTimeout(() => {
+    tooltip.remove();
+  }, 1500);
+}
+
 // 删除备忘录
+// 删除确认弹窗
+let deleteTargetId = null;
+
+function showDeleteModal(id) {
+  deleteTargetId = id;
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+
+function hideDeleteModal() {
+  deleteTargetId = null;
+  document.getElementById('delete-modal').style.display = 'none';
+}
+
+function confirmDelete() {
+  if (!deleteTargetId) return;
+  memos = memos.filter(m => m.id !== deleteTargetId);
+  saveMemos();
+  renderMemos();
+  updateStats();
+  updateTabCounts();
+  showToast('删除成功！', 'success');
+  hideDeleteModal();
+}
+
 function deleteMemo(id) {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
     return;
   }
   
-  if (!confirm('确定要删除这条备忘录吗？')) return;
-  memos = memos.filter(m => m.id !== id);
-  saveMemos();
-  renderMemos();
-  updateStats();
-  updateTabCounts();
+  showDeleteModal(id);
 }
 
 // 编辑备忘录 - 使用自定义弹窗
@@ -588,6 +651,29 @@ function hideEditModal() {
 // 清除编辑日期
 function clearEditDate() {
   document.getElementById('edit-date').value = '';
+}
+
+// 设为今天日期
+function setTodayDate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('edit-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+// 快速添加区设为今天
+function setMemoToday() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('memo-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+// 清除快速添加区日期
+function clearMemoDate() {
+  document.getElementById('memo-date').value = '';
 }
 
 // 显示添加标签弹窗
@@ -806,27 +892,46 @@ document.addEventListener('DOMContentLoaded', function() {
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
   background-color: var(--bg-primary);
   border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   z-index: 100;
+  font-size: 0.8rem;
+  transform: scale(0.9);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.admin-status:hover {
+  transform: scale(1);
+  opacity: 1;
+  box-shadow: var(--shadow-md);
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
   font-size: 0.85rem;
 }
 
 #login-text {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: inherit;
+  white-space: nowrap;
 }
 
 .admin-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: 6px;
+  font-size: inherit;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.admin-status:hover .admin-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
 }
 
 #login-btn {
@@ -1023,6 +1128,16 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-primary);
   font-size: 1rem;
   cursor: pointer;
+}
+
+/* 日期选择器在暗色模式下的样式 */
+.memo-date::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.memo-date:hover::-webkit-calendar-picker-indicator {
+  opacity: 0.8;
 }
 
 .memo-btn {

@@ -29,6 +29,58 @@ title: 备忘录
     </div>
   </div>
   
+  <!-- 编辑弹窗 -->
+  <div id="edit-modal" class="login-modal" style="display: none;">
+    <div class="login-content">
+      <h3>编辑备忘录</h3>
+      <input type="hidden" id="edit-id">
+      <div class="form-group">
+        <textarea id="edit-text" placeholder="备忘录内容..." class="form-textarea" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>标签：</label>
+        <select id="edit-category" class="memo-select">
+          <!-- 动态生成 -->
+        </select>
+        <button onclick="showAddCategory()" class="btn-small">+ 新建</button>
+      </div>
+      <div class="form-group">
+        <label>截止日期：</label>
+        <input type="date" id="edit-date" class="memo-date">
+        <button onclick="clearEditDate()" class="btn-small">清除</button>
+      </div>
+      <div class="login-actions">
+        <button onclick="saveEditMemo()" class="login-submit">保存</button>
+        <button onclick="hideEditModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 添加标签弹窗 -->
+  <div id="category-modal" class="login-modal" style="display: none;">
+    <div class="login-content">
+      <h3>新建标签</h3>
+      <input type="text" id="new-category-name" placeholder="标签名称" class="login-input">
+      <div class="form-group">
+        <label>选择颜色：</label>
+        <div class="color-picker">
+          <button onclick="selectColor('#f59e0b')" class="color-btn" style="background:#f59e0b" data-color="#f59e0b"></button>
+          <button onclick="selectColor('#3b82f6')" class="color-btn" style="background:#3b82f6" data-color="#3b82f6"></button>
+          <button onclick="selectColor('#10b981')" class="color-btn" style="background:#10b981" data-color="#10b981"></button>
+          <button onclick="selectColor('#ec4899')" class="color-btn" style="background:#ec4899" data-color="#ec4899"></button>
+          <button onclick="selectColor('#8b5cf6')" class="color-btn" style="background:#8b5cf6" data-color="#8b5cf6"></button>
+          <button onclick="selectColor('#06b6d4')" class="color-btn" style="background:#06b6d4" data-color="#06b6d4"></button>
+          <button onclick="selectColor('#ef4444')" class="color-btn" style="background:#ef4444" data-color="#ef4444"></button>
+          <button onclick="selectColor('#f97316')" class="color-btn" style="background:#f97316" data-color="#f97316"></button>
+        </div>
+      </div>
+      <div class="login-actions">
+        <button onclick="addNewCategory()" class="login-submit">添加</button>
+        <button onclick="hideCategoryModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
   <!-- 快速添加 (仅管理员可见) -->
   <div class="memo-add" id="memo-add-section" style="display: none;">
     <input type="text" id="memo-input" placeholder="添加新事项..." class="memo-input">
@@ -59,14 +111,9 @@ title: 备忘录
   </div>
   
   <!-- 分类标签 -->
-  <div class="memo-tabs">
+  <div class="memo-tabs" id="memo-tabs">
     <button class="memo-tab active" onclick="filterMemo('all')">全部 <span class="tab-count" id="count-all">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('todo')">待办 <span class="tab-count" id="count-todo">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('learning')">学习 <span class="tab-count" id="count-learning">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('idea')">想法 <span class="tab-count" id="count-idea">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('reminder')">提醒 <span class="tab-count" id="count-reminder">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('work')">工作 <span class="tab-count" id="count-work">0</span></button>
-    <button class="memo-tab" onclick="filterMemo('life')">生活 <span class="tab-count" id="count-life">0</span></button>
+    <!-- 动态生成其他标签 -->
   </div>
   
   <!-- 备忘录列表 -->
@@ -116,18 +163,83 @@ let currentFilter = 'all';
 let isAdmin = false;
 const ADMIN_PASSWORD = 'admin123';
 
-// 分类配置
-const categories = {
-  todo: { name: '待办', color: '#f59e0b' },
-  learning: { name: '学习', color: '#3b82f6' },
-  idea: { name: '想法', color: '#10b981' },
-  reminder: { name: '提醒', color: '#ec4899' },
-  work: { name: '工作', color: '#8b5cf6' },
-  life: { name: '生活', color: '#06b6d4' }
-};
+// 分类配置 - 从 localStorage 加载或初始化
+let categories = {};
+
+function loadCategories() {
+  const saved = localStorage.getItem('memo_categories');
+  if (saved) {
+    categories = JSON.parse(saved);
+  } else {
+    categories = {
+      todo: { name: '待办', color: '#f59e0b' },
+      learning: { name: '学习', color: '#3b82f6' },
+      idea: { name: '想法', color: '#10b981' },
+      reminder: { name: '提醒', color: '#ec4899' },
+      work: { name: '工作', color: '#8b5cf6' },
+      life: { name: '生活', color: '#06b6d4' }
+    };
+    saveCategories();
+  }
+}
+
+function saveCategories() {
+  localStorage.setItem('memo_categories', JSON.stringify(categories));
+}
+
+// 渲染标签选择器和标签页
+function renderCategories() {
+  // 渲染添加时的选择器
+  const addSelect = document.getElementById('memo-category');
+  if (addSelect) {
+    addSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
+      `<option value="${key}">${cat.name}</option>`
+    ).join('');
+  }
+  
+  // 渲染编辑时的选择器
+  const editSelect = document.getElementById('edit-category');
+  if (editSelect) {
+    editSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
+      `<option value="${key}">${cat.name}</option>`
+    ).join('');
+  }
+  
+  // 渲染标签页
+  const tabsContainer = document.getElementById('memo-tabs');
+  if (tabsContainer) {
+    const allTab = tabsContainer.querySelector('.memo-tab');
+    tabsContainer.innerHTML = '';
+    tabsContainer.appendChild(allTab);
+    
+    Object.entries(categories).forEach(([key, cat]) => {
+      const btn = document.createElement('button');
+      btn.className = 'memo-tab';
+      btn.onclick = () => filterMemo(key);
+      btn.innerHTML = `${cat.name} <span class="tab-count" id="count-${key}">0</span>`;
+      tabsContainer.appendChild(btn);
+    });
+    
+    // 恢复当前选中状态
+    if (currentFilter === 'all') {
+      allTab.classList.add('active');
+    } else {
+      const tabs = tabsContainer.querySelectorAll('.memo-tab');
+      tabs.forEach(tab => {
+        if (tab.textContent.includes(categories[currentFilter]?.name)) {
+          tab.classList.add('active');
+        }
+      });
+    }
+  }
+}
 
 // 初始化
 function init() {
+  // 加载分类
+  loadCategories();
+  renderCategories();
+  
   // 检查登录状态
   checkLoginStatus();
   
@@ -137,7 +249,11 @@ function init() {
   // 设置默认日期为今天
   const dateInput = document.getElementById('memo-date');
   if (dateInput) {
-    dateInput.valueAsDate = new Date();
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
   
   // 回车添加
@@ -416,7 +532,7 @@ function deleteMemo(id) {
   updateTabCounts();
 }
 
-// 编辑备忘录
+// 编辑备忘录 - 使用自定义弹窗
 function editMemo(id) {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
@@ -426,12 +542,101 @@ function editMemo(id) {
   const memo = memos.find(m => m.id === id);
   if (!memo) return;
   
-  const newText = prompt('编辑备忘录:', memo.text);
-  if (newText !== null && newText.trim()) {
-    memo.text = newText.trim();
+  // 填充弹窗数据
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-text').value = memo.text;
+  document.getElementById('edit-category').value = memo.category;
+  document.getElementById('edit-date').value = memo.deadline || '';
+  
+  // 显示弹窗
+  document.getElementById('edit-modal').style.display = 'flex';
+  document.getElementById('edit-text').focus();
+}
+
+// 保存编辑
+function saveEditMemo() {
+  const id = document.getElementById('edit-id').value;
+  const text = document.getElementById('edit-text').value.trim();
+  const category = document.getElementById('edit-category').value;
+  const deadline = document.getElementById('edit-date').value || null;
+  
+  if (!text) {
+    showToast('请输入备忘录内容', 'warning');
+    return;
+  }
+  
+  const memo = memos.find(m => m.id === id);
+  if (memo) {
+    memo.text = text;
+    memo.category = category;
+    memo.deadline = deadline;
     saveMemos();
     renderMemos();
+    updateStats();
+    updateTabCounts();
+    showToast('保存成功！', 'success');
   }
+  
+  hideEditModal();
+}
+
+// 隐藏编辑弹窗
+function hideEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+// 清除编辑日期
+function clearEditDate() {
+  document.getElementById('edit-date').value = '';
+}
+
+// 显示添加标签弹窗
+let selectedColor = '#f59e0b';
+function showAddCategory() {
+  if (!isAdmin) {
+    showToast('请先登录管理员账号', 'warning');
+    return;
+  }
+  document.getElementById('category-modal').style.display = 'flex';
+  document.getElementById('new-category-name').value = '';
+  document.getElementById('new-category-name').focus();
+  // 重置颜色选择
+  document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+  document.querySelector('.color-btn[data-color="#f59e0b"]')?.classList.add('selected');
+  selectedColor = '#f59e0b';
+}
+
+// 隐藏添加标签弹窗
+function hideCategoryModal() {
+  document.getElementById('category-modal').style.display = 'none';
+}
+
+// 选择颜色
+function selectColor(color) {
+  selectedColor = color;
+  document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+  document.querySelector(`.color-btn[data-color="${color}"]`)?.classList.add('selected');
+}
+
+// 添加新标签
+function addNewCategory() {
+  const name = document.getElementById('new-category-name').value.trim();
+  if (!name) {
+    showToast('请输入标签名称', 'warning');
+    return;
+  }
+  
+  // 生成唯一key
+  const key = 'cat_' + Date.now();
+  categories[key] = { name, color: selectedColor };
+  saveCategories();
+  renderCategories();
+  
+  // 选中新标签
+  document.getElementById('edit-category').value = key;
+  
+  hideCategoryModal();
+  showToast('标签添加成功！', 'success');
 }
 
 // 筛选备忘录
@@ -708,6 +913,80 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-muted);
   font-size: 0.8rem;
   margin-top: 1rem;
+}
+
+/* 编辑弹窗样式 */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-small {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.btn-small:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* 颜色选择器 */
+.color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+}
+
+.color-btn.selected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--text-primary);
 }
 
 /* 添加区域 */

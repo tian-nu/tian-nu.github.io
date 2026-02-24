@@ -117,7 +117,97 @@ layout: default
   {% if page.comments != false %}
     <section class="comments-section">
       <h4 class="comments-title">评论</h4>
-      <div class="giscus"></div>
+      
+      <!-- Giscus 评论系统 -->
+      <script src="https://giscus.app/client.js"
+        data-repo="{{ site.giscus.repo }}"
+        data-repo-id="{{ site.giscus.repo_id }}"
+        data-category="{{ site.giscus.category }}"
+        data-category-id="{{ site.giscus.category_id }}"
+        data-mapping="{{ site.giscus.mapping | default: 'pathname' }}"
+        data-strict="0"
+        data-reactions-enabled="{{ site.giscus.reactions_enabled | default: '1' }}"
+        data-emit-metadata="{{ site.giscus.emit_metadata | default: '0' }}"
+        data-input-position="bottom"
+        data-theme="{{ site.giscus.theme | default: 'preferred_color_scheme' }}"
+        data-lang="{{ site.giscus.lang | default: 'zh-CN' }}"
+        crossorigin="anonymous"
+        async>
+      </script>
+      
+      <!-- 如果 Giscus 未配置，显示本地留言板 -->
+      {% unless site.giscus.repo_id != "" %}
+        <div class="local-comments">
+          <div id="post-comments-{{ page.url | slugify }}"></div>
+          <script>
+            (function() {
+              const container = document.getElementById('post-comments-{{ page.url | slugify }}');
+              if (!container) return;
+              
+              // 加载该文章的评论
+              const postKey = 'comments_{{ page.url | slugify }}';
+              let comments = JSON.parse(localStorage.getItem(postKey) || '[]');
+              
+              function renderComments() {
+                if (comments.length === 0) {
+                  container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">暂无评论，来发表第一条吧！</p>';
+                  return;
+                }
+                
+                container.innerHTML = comments.map((c, i) => `
+                  <div class="comment-item" style="padding: 1rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                      <strong style="color: var(--primary-color);">${escapeHtml(c.name)}</strong>
+                      <span style="color: var(--text-muted); font-size: 0.8rem;">${c.time}</span>
+                    </div>
+                    <p style="color: var(--text-secondary); margin: 0;">${escapeHtml(c.text)}</p>
+                  </div>
+                `).join('');
+              }
+              
+              function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+              }
+              
+              // 渲染已有评论
+              renderComments();
+              
+              // 添加评论表单
+              const form = document.createElement('div');
+              form.style.cssText = 'margin-top: 1.5rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px;';
+              form.innerHTML = `
+                <h5 style="margin-bottom: 1rem;">发表评论</h5>
+                <input type="text" id="comment-name-{{ page.url | slugify }}" placeholder="你的昵称" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary);">
+                <textarea id="comment-text-{{ page.url | slugify }}" placeholder="写下你的评论..." rows="3" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); resize: vertical;"></textarea>
+                <button onclick="addComment{{ page.url | slugify | replace: '-', '_' }}()" style="padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">发表评论</button>
+              `;
+              container.parentNode.appendChild(form);
+              
+              // 添加评论函数
+              window['addComment{{ page.url | slugify | replace: "-", "_" }}'] = function() {
+                const name = document.getElementById('comment-name-{{ page.url | slugify }}').value.trim() || '访客';
+                const text = document.getElementById('comment-text-{{ page.url | slugify }}').value.trim();
+                
+                if (!text) {
+                  alert('请输入评论内容');
+                  return;
+                }
+                
+                const now = new Date();
+                const time = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                
+                comments.unshift({ name, text, time });
+                localStorage.setItem(postKey, JSON.stringify(comments));
+                
+                document.getElementById('comment-text-{{ page.url | slugify }}').value = '';
+                renderComments();
+              };
+            })();
+          </script>
+        </div>
+      {% endunless %}
     </section>
   {% endif %}
 </article>

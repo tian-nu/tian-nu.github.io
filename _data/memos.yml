@@ -1,0 +1,45 @@
+# 备忘录数据
+# 直接在仓库中编辑此文件来管理备忘录
+# 支持分类: todo(待办), learning(学习), idea(想法), reminder(提醒), work(工作), life(生活)
+
+- id: memo-1
+  text: 完善博客的响应式设计
+  category: todo
+  completed: false
+  deadline: 2024-12-31
+  priority: high
+
+- id: memo-2
+  text: 学习 Jekyll 高级用法
+  category: learning
+  completed: false
+  deadline: 2024-12-25
+  priority: medium
+
+- id: memo-3
+  text: 添加一个照片墙页面
+  category: idea
+  completed: false
+  deadline:
+  priority: low
+
+- id: memo-4
+  text: 购买域名
+  category: reminder
+  completed: true
+  deadline: 2024-01-15
+  priority: medium
+
+- id: memo-5
+  text: 优化博客加载速度
+  category: work
+  completed: false
+  deadline: 2024-12-20
+  priority: high
+
+- id: memo-6
+  text: 整理书架
+  category: life
+  completed: false
+  deadline:
+  priority: low

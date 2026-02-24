@@ -4,7 +4,7 @@ description: "记录技术、生活与思考的个人博客"
 author:
   name: "天努"
   email: "your-email@example.com"
-  avatar: "/assets/images/avatar.png"
+  avatar: "https://avatars.githubusercontent.com/u/176593548?s=400&u=7420d9a4e1037775040a79ec4536998f7d05347b&v=4"
   bio: "一个热爱技术的开发者，喜欢探索新事物，记录学习与生活。"
   location: "中国"
   github: "tian-nu"

@@ -42,6 +42,13 @@ title: 备忘录
         <select id="edit-category" class="memo-select">
         </select>
         <button onclick="showAddCategory()" class="btn-small">+ 新建</button>
+        <button onclick="showManageCategoryModal()" class="btn-small">管理</button>
+      </div>
+      <div class="form-group">
+        <label>开始日期：</label>
+        <input type="date" id="edit-start-date" class="memo-date">
+        <button onclick="setTodayStartDate()" class="btn-small">今天</button>
+        <button onclick="clearEditStartDate()" class="btn-small">清除</button>
       </div>
       <div class="form-group">
         <label>截止日期：</label>
@@ -93,6 +100,34 @@ title: 备忘录
     </div>
   </div>
   
+  <!-- 管理标签弹窗 -->
+  <div id="manage-category-modal" class="login-modal" style="display: none;">
+    <div class="login-content" style="max-width: 450px;">
+      <h3>管理标签</h3>
+      <div class="category-list" id="manage-category-list">
+        <!-- 动态生成标签列表 -->
+      </div>
+      <div class="login-actions">
+        <button onclick="hideManageCategoryModal()" class="login-cancel" style="flex: 1;">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 删除标签确认弹窗 -->
+  <div id="delete-category-modal" class="login-modal" style="display: none;">
+    <div class="login-content" style="max-width: 350px;">
+      <h3>确认删除标签</h3>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        确定要删除标签 "<span id="delete-category-name"></span>" 吗？<br>
+        <small style="color: var(--text-muted);">该标签下的备忘录将变为"待办"</small>
+      </p>
+      <div class="login-actions">
+        <button onclick="confirmDeleteCategory()" class="login-submit" style="background: linear-gradient(135deg, #ef4444, #dc2626);">删除</button>
+        <button onclick="hideDeleteCategoryModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
   <!-- 新建备忘录弹窗 -->
   <div id="create-modal" class="login-modal" style="display: none;">
     <div class="login-content">
@@ -105,6 +140,13 @@ title: 备忘录
         <select id="create-category" class="memo-select">
         </select>
         <button onclick="showAddCategoryFromCreate()" class="btn-small">+ 新建</button>
+        <button onclick="showManageCategoryModalFromCreate()" class="btn-small">管理</button>
+      </div>
+      <div class="form-group">
+        <label>开始日期：</label>
+        <input type="date" id="create-start-date" class="memo-date">
+        <button onclick="setTodayStartDateCreate()" class="btn-small">今天</button>
+        <button onclick="clearCreateStartDate()" class="btn-small">清除</button>
       </div>
       <div class="form-group">
         <label>截止日期：</label>
@@ -399,6 +441,7 @@ function renderMemos() {
     const cat = categories[memo.category] || categories.todo;
     const isOverdue = memo.deadline && !memo.completed && new Date(memo.deadline + 'T23:59:59') < new Date();
     const deadlineText = memo.deadline ? formatDate(memo.deadline) : '';
+    const startDateText = memo.startDate ? formatDate(memo.startDate) : '';
     const checkboxId = 'cb-' + memo.id.replace(/[^a-zA-Z0-9]/g, '-');
     
     return `
@@ -412,6 +455,7 @@ function renderMemos() {
           <div class="memo-text">${escapeHtml(memo.text)}</div>
           <div class="memo-meta">
             <span class="memo-tag" style="background: ${cat.color}20; color: ${cat.color}">${cat.name}</span>
+            ${startDateText ? `<span class="memo-start-date">🚀 ${startDateText}</span>` : ''}
             ${deadlineText ? `<span class="memo-deadline ${isOverdue ? 'overdue' : ''}">📅 ${deadlineText}</span>` : ''}
             <span class="memo-time">${formatTime(memo.createdAt)}</span>
           </div>
@@ -513,6 +557,7 @@ function editMemo(id) {
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-text').value = memo.text;
   document.getElementById('edit-category').value = memo.category;
+  document.getElementById('edit-start-date').value = memo.startDate || '';
   document.getElementById('edit-date').value = memo.deadline || '';
   
   document.getElementById('edit-modal').style.display = 'flex';
@@ -523,6 +568,7 @@ function saveEditMemo() {
   const id = document.getElementById('edit-id').value;
   const text = document.getElementById('edit-text').value.trim();
   const category = document.getElementById('edit-category').value;
+  const startDate = document.getElementById('edit-start-date').value || null;
   const deadline = document.getElementById('edit-date').value || null;
   
   if (!text) {
@@ -534,6 +580,7 @@ function saveEditMemo() {
   if (memo) {
     memo.text = text;
     memo.category = category;
+    memo.startDate = startDate;
     memo.deadline = deadline;
     saveMemos();
     renderMemos();
@@ -561,6 +608,18 @@ function setTodayDate() {
   document.getElementById('edit-date').value = `${yyyy}-${mm}-${dd}`;
 }
 
+function clearEditStartDate() {
+  document.getElementById('edit-start-date').value = '';
+}
+
+function setTodayStartDate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('edit-start-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
 // 新建备忘录弹窗功能
 function showCreateModal() {
   if (!isAdmin) {
@@ -576,6 +635,7 @@ function showCreateModal() {
   
   document.getElementById('create-modal').style.display = 'flex';
   document.getElementById('create-text').value = '';
+  document.getElementById('create-start-date').value = '';
   document.getElementById('create-date').value = '';
   document.getElementById('create-text').focus();
 }
@@ -596,9 +656,22 @@ function setTodayDateCreate() {
   document.getElementById('create-date').value = `${yyyy}-${mm}-${dd}`;
 }
 
+function clearCreateStartDate() {
+  document.getElementById('create-start-date').value = '';
+}
+
+function setTodayStartDateCreate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('create-start-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
 function saveNewMemo() {
   const text = document.getElementById('create-text').value.trim();
   const category = document.getElementById('create-category').value;
+  const startDate = document.getElementById('create-start-date').value || null;
   const deadline = document.getElementById('create-date').value || null;
   
   if (!text) {
@@ -613,6 +686,7 @@ function saveNewMemo() {
     category: category,
     completed: false,
     createdAt: new Date().toISOString(),
+    startDate: startDate,
     deadline: deadline
   };
   
@@ -631,6 +705,7 @@ function showAddCategoryFromCreate() {
   // 保存创建弹窗的状态
   const createText = document.getElementById('create-text').value;
   const createCategory = document.getElementById('create-category').value;
+  const createStartDate = document.getElementById('create-start-date').value;
   const createDate = document.getElementById('create-date').value;
   
   // 在添加标签后恢复创建弹窗
@@ -640,6 +715,7 @@ function showAddCategoryFromCreate() {
     document.getElementById('create-modal').style.display = 'flex';
     document.getElementById('create-text').value = createText;
     document.getElementById('create-category').value = createCategory;
+    document.getElementById('create-start-date').value = createStartDate;
     document.getElementById('create-date').value = createDate;
     // 重新初始化标签选择器
     const createSelect = document.getElementById('create-category');
@@ -690,6 +766,107 @@ function addNewCategory() {
   document.getElementById('edit-category').value = key;
   hideCategoryModal();
   showToast('标签添加成功！', 'success');
+}
+
+// 管理标签功能
+let categoryToDelete = null;
+
+function showManageCategoryModal() {
+  if (!isAdmin) {
+    showToast('请先登录管理员账号', 'warning');
+    return;
+  }
+  renderManageCategoryList();
+  document.getElementById('manage-category-modal').style.display = 'flex';
+}
+
+function showManageCategoryModalFromCreate() {
+  showManageCategoryModal();
+  // 保存创建弹窗的状态
+  const createText = document.getElementById('create-text').value;
+  const createCategory = document.getElementById('create-category').value;
+  const createStartDate = document.getElementById('create-start-date').value;
+  const createDate = document.getElementById('create-date').value;
+  
+  // 在关闭管理弹窗后恢复创建弹窗
+  const originalHideManageCategoryModal = hideManageCategoryModal;
+  hideManageCategoryModal = function() {
+    originalHideManageCategoryModal();
+    document.getElementById('create-modal').style.display = 'flex';
+    document.getElementById('create-text').value = createText;
+    document.getElementById('create-category').value = createCategory;
+    document.getElementById('create-start-date').value = createStartDate;
+    document.getElementById('create-date').value = createDate;
+    // 重新初始化标签选择器
+    const createSelect = document.getElementById('create-category');
+    createSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
+      `<option value="${key}">${cat.name}</option>`
+    ).join('');
+    document.getElementById('create-category').value = createCategory;
+    hideManageCategoryModal = originalHideManageCategoryModal;
+  };
+  document.getElementById('create-modal').style.display = 'none';
+}
+
+function hideManageCategoryModal() {
+  document.getElementById('manage-category-modal').style.display = 'none';
+}
+
+function renderManageCategoryList() {
+  const listEl = document.getElementById('manage-category-list');
+  const defaultCategories = ['todo', 'learning', 'idea', 'reminder'];
+  
+  listEl.innerHTML = Object.entries(categories).map(([key, cat]) => {
+    const isDefault = defaultCategories.includes(key);
+    return `
+      <div class="category-item">
+        <span class="category-badge" style="background: ${cat.color}20; color: ${cat.color}; border-color: ${cat.color}40;">
+          ${cat.name}
+        </span>
+        ${!isDefault ? `<button onclick="showDeleteCategoryModal('${key}', '${cat.name}')" class="btn-small danger">删除</button>` : '<span class="default-label">默认</span>'}
+      </div>
+    `;
+  }).join('');
+}
+
+function showDeleteCategoryModal(key, name) {
+  categoryToDelete = key;
+  document.getElementById('delete-category-name').textContent = name;
+  document.getElementById('delete-category-modal').style.display = 'flex';
+}
+
+function hideDeleteCategoryModal() {
+  document.getElementById('delete-category-modal').style.display = 'none';
+  categoryToDelete = null;
+}
+
+function confirmDeleteCategory() {
+  if (!categoryToDelete) return;
+  
+  // 将该标签下的备忘录改为"待办"(todo)
+  memos.forEach(memo => {
+    if (memo.category === categoryToDelete) {
+      memo.category = 'todo';
+    }
+  });
+  
+  delete categories[categoryToDelete];
+  saveCategories();
+  saveMemos();
+  
+  renderCategories();
+  renderMemos();
+  updateTabCounts();
+  renderManageCategoryList();
+  
+  // 更新选择器中的值
+  const editSelect = document.getElementById('edit-category');
+  if (editSelect.value === categoryToDelete) {
+    editSelect.value = 'todo';
+  }
+  
+  hideDeleteCategoryModal();
+  showToast('标签已删除', 'success');
 }
 
 function filterMemo(category) {
@@ -1178,6 +1355,48 @@ document.addEventListener('DOMContentLoaded', function() {
   border-color: var(--primary-color);
 }
 
+.category-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.default-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.btn-small.danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+}
+
+.btn-small.danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
 .memo-tabs {
   display: flex;
   gap: 0.5rem;
@@ -1335,6 +1554,11 @@ document.addEventListener('DOMContentLoaded', function() {
   font-weight: 600;
 }
 
+.memo-start-date {
+  font-size: 0.8rem;
+  color: #10b981;
+}
+
 .memo-time {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -1447,6 +1671,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .memo-container.compact .memo-deadline,
+.memo-container.compact .memo-start-date,
 .memo-container.compact .memo-time {
   font-size: 0.75rem;
 }

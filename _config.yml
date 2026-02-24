@@ -55,11 +55,16 @@ social:
   # zhihu: ""
 
 # 评论配置 (使用Giscus)
+# 注意：需要在 https://giscus.app 上配置你的仓库
+# 1. 确保仓库是公开的
+# 2. 安装 giscus app: https://github.com/apps/giscus
+# 3. 在仓库中启用 Discussions 功能
+# 4. 访问 https://giscus.app 获取 repo_id 和 category_id
 giscus:
   repo: "tian-nu/tian-nu.github.io"
-  repo_id: ""
+  repo_id: "R_kgDONp3KzA"
   category: "Announcements"
-  category_id: ""
+  category_id: "DIC_kwDONp3KzM4CmV3z"
   mapping: "pathname"
   reactions_enabled: "1"
   emit_metadata: "0"

@@ -136,7 +136,7 @@ layout: default
       </script>
       
       <!-- 如果 Giscus 未配置，显示本地留言板 -->
-      {% unless site.giscus.repo_id != "" %}
+      {% if site.giscus.repo_id == "" or site.giscus.repo_id == nil %}
         <div class="local-comments">
           <div id="post-comments-{{ page.url | slugify }}"></div>
           <script>
@@ -207,7 +207,7 @@ layout: default
             })();
           </script>
         </div>
-      {% endunless %}
+      {% endif %}
     </section>
   {% endif %}
 </article>

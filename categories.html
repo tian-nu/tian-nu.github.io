@@ -1,0 +1,299 @@
+---
+layout: page
+title: 专栏
+---
+
+<div class="categories-container">
+  <p class="categories-intro">文章按主题分类，方便查找感兴趣的内容。</p>
+  
+  <div class="categories-grid">
+    {% for category in site.categories %}
+      {% assign category_name = category[0] %}
+      {% assign category_posts = category[1] %}
+      
+      <div class="category-card">
+        <div class="category-header">
+          <h3 class="category-name">{{ category_name }}</h3>
+          <span class="category-count">{{ category_posts.size }} 篇文章</span>
+        </div>
+        
+        <div class="category-posts">
+          {% for post in category_posts limit:3 %}
+            <a href="{{ post.url | relative_url }}" class="category-post-item">
+              <span class="post-title">{{ post.title }}</span>
+              <span class="post-date">{{ post.date | date: "%m-%d" }}</span>
+            </a>
+          {% endfor %}
+          
+          {% if category_posts.size > 3 %}
+            <a href="#category-{{ category_name | slugify }}" class="view-more-link" onclick="showCategoryPosts('{{ category_name | slugify }}')">
+              查看全部 {{ category_posts.size }} 篇文章 →
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <!-- 分类详情模态框 -->
+  {% for category in site.categories %}
+    {% assign category_name = category[0] %}
+    {% assign category_posts = category[1] %}
+    
+    <div class="category-modal" id="category-{{ category_name | slugify }}" style="display: none;">
+      <div class="category-modal-content">
+        <div class="category-modal-header">
+          <h2>{{ category_name }}</h2>
+          <button class="modal-close" onclick="closeCategoryModal('{{ category_name | slugify }}')">×</button>
+        </div>
+        <div class="category-modal-posts">
+          {% for post in category_posts %}
+            <a href="{{ post.url | relative_url }}" class="modal-post-item">
+              <span class="modal-post-title">{{ post.title }}</span>
+              <span class="modal-post-date">{{ post.date | date: "%Y-%m-%d" }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+function showCategoryPosts(categorySlug) {
+  event.preventDefault();
+  const modal = document.getElementById('category-' + categorySlug);
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeCategoryModal(categorySlug) {
+  const modal = document.getElementById('category-' + categorySlug);
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+// 点击遮罩关闭
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('category-modal')) {
+    e.target.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+});
+
+// ESC键关闭
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.category-modal').forEach(modal => {
+      modal.style.display = 'none';
+    });
+    document.body.style.overflow = '';
+  }
+});
+</script>
+
+<style>
+.categories-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.categories-intro {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-card {
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.category-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.category-count {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+.category-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.category-post-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.category-post-item .post-title {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.category-post-item .post-date {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.view-more-link {
+  text-align: center;
+  padding: 0.75rem;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.view-more-link:hover {
+  background-color: var(--primary-light);
+}
+
+/* 模态框 */
+.category-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.category-modal-content {
+  background-color: var(--bg-primary);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.category-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.category-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.category-modal-posts {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.modal-post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.modal-post-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.modal-post-title {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.modal-post-date {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-modal {
+    padding: 1rem;
+  }
+  
+  .category-modal-content {
+    max-height: 90vh;
+  }
+}
+</style>

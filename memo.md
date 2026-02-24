@@ -13,15 +13,7 @@ title: 备忘录
 <!-- 自定义提示 -->
 <div id="toast" class="toast"></div>
 
-<!-- 排版切换 -->
-<div class="layout-toggle">
-  <button onclick="toggleLayout()" class="layout-btn" title="切换排版">
-    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 6h4v2H4zm0 5h4v2H4zm0 5h4v2H4zm6-10h10v2H10zm0 5h10v2H10zm0 5h10v2H10z"/></svg>
-    <span id="layout-text">紧凑</span>
-  </button>
-</div>
-
-<div class="memo-container">
+<div class="memo-container compact">
   <p class="memo-intro">记录待办事项、学习计划和重要提醒。</p>
   
   <!-- 登录弹窗 -->
@@ -555,38 +547,11 @@ function showToast(message, type = 'info') {
   }, 2500);
 }
 
-// 切换排版
-let isCompact = false;
-function toggleLayout() {
-  isCompact = !isCompact;
-  const container = document.querySelector('.memo-container');
-  const btnText = document.getElementById('layout-text');
-  
-  if (isCompact) {
-    container.classList.add('compact');
-    btnText.textContent = '宽松';
-    localStorage.setItem('memo_layout', 'compact');
-  } else {
-    container.classList.remove('compact');
-    btnText.textContent = '紧凑';
-    localStorage.setItem('memo_layout', 'normal');
-  }
-}
-
-// 加载排版设置
-function loadLayoutSetting() {
-  const saved = localStorage.getItem('memo_layout');
-  if (saved === 'compact') {
-    isCompact = true;
-    document.querySelector('.memo-container')?.classList.add('compact');
-    document.getElementById('layout-text').textContent = '宽松';
-  }
-}
-
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
   init();
-  loadLayoutSetting();
+  // 为页面添加 memo-page 类用于样式优化
+  document.querySelector('.page-container')?.classList.add('memo-page');
 });
 </script>
 
@@ -616,34 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
 .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-
-/* 排版切换按钮 */
-.layout-toggle {
-  position: fixed;
-  top: 80px;
-  right: 200px;
-  z-index: 100;
-}
-
-.layout-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: var(--shadow-sm);
-}
-
-.layout-btn:hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
 .memo-container {
   max-width: 900px;
@@ -1194,6 +1131,20 @@ document.addEventListener('DOMContentLoaded', function() {
   font-size: 0.9rem;
 }
 
+/* 备忘录页面标题优化 */
+.memo-page .page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.memo-page .page-container {
+  padding-top: 1rem;
+}
+
 @media (max-width: 768px) {
   .memo-add {
     flex-direction: column;
@@ -1234,15 +1185,6 @@ document.addEventListener('DOMContentLoaded', function() {
     top: auto;
     right: auto;
     margin-bottom: 1rem;
-    justify-content: center;
-  }
-  
-  .layout-toggle {
-    position: relative;
-    top: auto;
-    right: auto;
-    margin-bottom: 0.5rem;
-    display: flex;
     justify-content: center;
   }
   

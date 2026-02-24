@@ -8,25 +8,53 @@ title: 留言板
 
 <!-- 右上角管理员状态 -->
 <div id="admin-status" class="admin-status">
-  <span id="login-text">访客模式</span>
+  <span id="login-text">访客模式 - 仅可查看</span>
   <button id="login-btn" onclick="showLoginModal()" class="admin-btn">管理员登录</button>
   <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
 </div>
 
-<!-- 登录弹窗 -->
-<div id="login-modal" class="login-modal" style="display: none;">
-  <div class="login-content">
-    <h3>管理员登录</h3>
-    <input type="password" id="admin-password" placeholder="请输入密码" class="login-input">
-    <div class="login-actions">
-      <button onclick="login()" class="login-submit">登录</button>
-      <button onclick="hideLoginModal()" class="login-cancel">取消</button>
-    </div>
-    <p class="login-hint">默认密码: admin123</p>
-  </div>
-</div>
-
 <div class="guestbook-container">
+  <!-- 登录弹窗 -->
+  <div id="login-modal" class="login-modal" style="display: none;">
+    <div class="login-content">
+      <h3>管理员登录</h3>
+      <input type="password" id="admin-password" placeholder="请输入密码" class="login-input">
+      <div class="login-actions">
+        <button onclick="login()" class="login-submit">登录</button>
+        <button onclick="hideLoginModal()" class="login-cancel">取消</button>
+      </div>
+      <p class="login-hint">默认密码: admin123</p>
+    </div>
+  </div>
+  
+  <!-- 删除确认弹窗 -->
+  <div id="delete-modal" class="login-modal" style="display: none;">
+    <div class="login-content" style="max-width: 350px;">
+      <h3>确认删除</h3>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">确定要删除这条留言吗？</p>
+      <div class="login-actions">
+        <button onclick="confirmDelete()" class="login-submit" style="background: linear-gradient(135deg, #ef4444, #dc2626);">删除</button>
+        <button onclick="hideDeleteModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 回复弹窗 -->
+  <div id="reply-modal" class="login-modal" style="display: none;">
+    <div class="login-content">
+      <h3>回复留言</h3>
+      <input type="hidden" id="reply-index">
+      <div class="form-group">
+        <label id="reply-label" style="font-size: 0.9rem; color: var(--text-secondary);">回复访客：</label>
+        <textarea id="reply-text" class="form-textarea" rows="4" placeholder="输入你的回复..."></textarea>
+      </div>
+      <div class="login-actions">
+        <button onclick="saveReply()" class="login-submit">保存</button>
+        <button onclick="hideReplyModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  
   <div class="guestbook-intro">
     <h2>欢迎留下你的足迹</h2>
     <p>有任何想法、建议或想聊的话题，都可以在这里留言。</p>
@@ -46,18 +74,8 @@ title: 留言板
   
   <!-- 留言列表 -->
   <div class="guestbook-list" id="guestbook-list">
-    <!-- 示例留言 -->
-    <div class="guestbook-item">
-      <div class="guestbook-avatar">
-        <span>访</span>
-      </div>
-      <div class="guestbook-content">
-        <div class="guestbook-header">
-          <span class="guestbook-name">访客</span>
-          <span class="guestbook-time">2024-01-01</span>
-        </div>
-        <p class="guestbook-text">欢迎来到我的博客！期待与你交流。</p>
-      </div>
+    <div class="empty-state">
+      <p>加载中...</p>
     </div>
   </div>
 </div>
@@ -65,6 +83,8 @@ title: 留言板
 <script>
 let isAdmin = false;
 const ADMIN_PASSWORD = 'admin123';
+let deleteTargetIndex = null;
+let replyTargetIndex = null;
 
 // 检查登录状态
 function checkLoginStatus() {
@@ -87,11 +107,11 @@ function updateAdminUI() {
   const logoutBtn = document.getElementById('logout-btn');
   
   if (isAdmin) {
-    loginText.textContent = '管理员模式';
+    loginText.textContent = '管理员模式 - 可编辑';
     loginBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
   } else {
-    loginText.textContent = '访客模式';
+    loginText.textContent = '访客模式 - 仅可查看';
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
   }
@@ -130,7 +150,6 @@ function logout() {
   isAdmin = false;
   localStorage.removeItem('guestbook_admin_login_time');
   updateAdminUI();
-  showToast('已退出登录', 'info');
 }
 
 // 显示提示
@@ -200,34 +219,45 @@ function addGuestbookMessage() {
   messages.unshift({ name, text, time, reply: '' });
   localStorage.setItem('guestbook_messages', JSON.stringify(messages));
   
-  // 清空输入
   nameInput.value = '';
   messageInput.value = '';
   
   showToast('留言发表成功！', 'success');
   
-  // 重新加载
   loadGuestbookMessages();
 }
 
-// 删除留言
+// 删除留言 - 显示确认弹窗
 function deleteMessage(index) {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
     return;
   }
   
-  if (!confirm('确定要删除这条留言吗？')) return;
+  deleteTargetIndex = index;
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+
+// 隐藏删除确认弹窗
+function hideDeleteModal() {
+  deleteTargetIndex = null;
+  document.getElementById('delete-modal').style.display = 'none';
+}
+
+// 确认删除
+function confirmDelete() {
+  if (deleteTargetIndex === null) return;
   
   const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
-  messages.splice(index, 1);
+  messages.splice(deleteTargetIndex, 1);
   localStorage.setItem('guestbook_messages', JSON.stringify(messages));
   
   showToast('留言已删除', 'success');
+  hideDeleteModal();
   loadGuestbookMessages();
 }
 
-// 回复留言
+// 回复留言 - 显示回复弹窗
 function replyMessage(index) {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
@@ -237,13 +267,33 @@ function replyMessage(index) {
   const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
   const msg = messages[index];
   
-  const reply = prompt('回复 ' + msg.name + '：', msg.reply || '');
-  if (reply !== null) {
-    msg.reply = reply.trim();
-    localStorage.setItem('guestbook_messages', JSON.stringify(messages));
-    showToast(reply.trim() ? '回复成功！' : '回复已删除', 'success');
-    loadGuestbookMessages();
-  }
+  replyTargetIndex = index;
+  document.getElementById('reply-label').textContent = '回复 ' + msg.name + '：';
+  document.getElementById('reply-text').value = msg.reply || '';
+  
+  document.getElementById('reply-modal').style.display = 'flex';
+  document.getElementById('reply-text').focus();
+}
+
+// 隐藏回复弹窗
+function hideReplyModal() {
+  replyTargetIndex = null;
+  document.getElementById('reply-modal').style.display = 'none';
+}
+
+// 保存回复
+function saveReply() {
+  if (replyTargetIndex === null) return;
+  
+  const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
+  const reply = document.getElementById('reply-text').value.trim();
+  
+  messages[replyTargetIndex].reply = reply;
+  localStorage.setItem('guestbook_messages', JSON.stringify(messages));
+  
+  showToast(reply ? '回复成功！' : '回复已删除', 'success');
+  hideReplyModal();
+  loadGuestbookMessages();
 }
 
 // HTML转义
@@ -258,21 +308,30 @@ document.addEventListener('DOMContentLoaded', function() {
   checkLoginStatus();
   loadGuestbookMessages();
   
-  // 回车提交
-  document.getElementById('guestbook-message').addEventListener('keypress', function(e) {
+  document.getElementById('guestbook-message')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       addGuestbookMessage();
     }
   });
   
-  // 登录框回车
-  document.getElementById('admin-password').addEventListener('keypress', function(e) {
+  document.getElementById('admin-password')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') login();
   });
   
-  // 为页面添加样式类
+  document.getElementById('reply-text')?.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+      saveReply();
+    }
+  });
+  
   document.querySelector('.page-container')?.classList.add('guestbook-page');
+  
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('login-modal')) {
+      e.target.style.display = 'none';
+    }
+  });
 });
 </script>
 
@@ -330,6 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-primary);
   font-size: 1rem;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -398,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .guestbook-content {
   flex: 1;
+  min-width: 0;
 }
 
 .guestbook-header {
@@ -420,6 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .guestbook-text {
   color: var(--text-secondary);
   line-height: 1.6;
+  word-break: break-word;
 }
 
 /* 博主回复 */
@@ -517,26 +579,46 @@ document.addEventListener('DOMContentLoaded', function() {
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
   background-color: var(--bg-primary);
   border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   z-index: 100;
+  font-size: 0.8rem;
+  transform: scale(0.9);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.admin-status:hover {
+  transform: scale(1);
+  opacity: 1;
+  box-shadow: var(--shadow-md);
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
   font-size: 0.85rem;
 }
 
 #login-text {
   color: var(--text-secondary);
+  font-size: inherit;
+  white-space: nowrap;
 }
 
 .admin-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: 6px;
+  font-size: inherit;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.admin-status:hover .admin-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
 }
 
 #login-btn {
@@ -579,13 +661,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .login-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: 10px;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
 }
 
 .login-input:focus {
@@ -603,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
   flex: 1;
   padding: 0.75rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -622,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .login-hint {
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
@@ -674,6 +757,10 @@ document.addEventListener('DOMContentLoaded', function() {
     top: 20px;
     width: 80%;
     text-align: center;
+  }
+  
+  .login-actions {
+    flex-direction: column;
   }
 }
 </style>

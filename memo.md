@@ -10,7 +10,7 @@ title: 备忘录
   <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
 </div>
 
-<!-- 自定义提示 -->
+<!-- Toast 提示 -->
 <div id="toast" class="toast"></div>
 
 <div class="memo-container compact">
@@ -40,7 +40,6 @@ title: 备忘录
       <div class="form-group">
         <label>标签：</label>
         <select id="edit-category" class="memo-select">
-          <!-- 动态生成 -->
         </select>
         <button onclick="showAddCategory()" class="btn-small">+ 新建</button>
       </div>
@@ -116,7 +115,6 @@ title: 备忘录
   <!-- 分类标签 -->
   <div class="memo-tabs" id="memo-tabs">
     <button class="memo-tab active" onclick="filterMemo('all')">全部 <span class="tab-count" id="count-all">0</span></button>
-    <!-- 动态生成其他标签 -->
   </div>
   
   <!-- 备忘录列表 -->
@@ -160,13 +158,11 @@ title: 备忘录
 </div>
 
 <script>
-// 数据存储
 let memos = [];
 let currentFilter = 'all';
 let isAdmin = false;
 const ADMIN_PASSWORD = 'admin123';
 
-// 分类配置 - 从 localStorage 加载或初始化
 let categories = {};
 
 function loadCategories() {
@@ -190,17 +186,7 @@ function saveCategories() {
   localStorage.setItem('memo_categories', JSON.stringify(categories));
 }
 
-// 渲染标签选择器和标签页
 function renderCategories() {
-  // 渲染添加时的选择器
-  const addSelect = document.getElementById('memo-category');
-  if (addSelect) {
-    addSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
-      `<option value="${key}">${cat.name}</option>`
-    ).join('');
-  }
-  
-  // 渲染编辑时的选择器
   const editSelect = document.getElementById('edit-category');
   if (editSelect) {
     editSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
@@ -208,7 +194,6 @@ function renderCategories() {
     ).join('');
   }
   
-  // 渲染标签页
   const tabsContainer = document.getElementById('memo-tabs');
   if (tabsContainer) {
     const allTab = tabsContainer.querySelector('.memo-tab');
@@ -223,7 +208,6 @@ function renderCategories() {
       tabsContainer.appendChild(btn);
     });
     
-    // 恢复当前选中状态
     if (currentFilter === 'all') {
       allTab.classList.add('active');
     } else {
@@ -237,19 +221,12 @@ function renderCategories() {
   }
 }
 
-// 初始化
 function init() {
-  // 加载分类
   loadCategories();
   renderCategories();
-  
-  // 检查登录状态
   checkLoginStatus();
-  
-  // 加载备忘录数据
   loadMemos();
   
-  // 登录框回车
   const pwdInput = document.getElementById('admin-password');
   if (pwdInput) {
     pwdInput.addEventListener('keypress', function(e) {
@@ -258,7 +235,6 @@ function init() {
   }
 }
 
-// 检查登录状态
 function checkLoginStatus() {
   const loginTime = localStorage.getItem('admin_login_time');
   if (loginTime) {
@@ -272,7 +248,6 @@ function checkLoginStatus() {
   updateAdminUI();
 }
 
-// 更新管理员界面
 function updateAdminUI() {
   const loginText = document.getElementById('login-text');
   const loginBtn = document.getElementById('login-btn');
@@ -297,19 +272,16 @@ function updateAdminUI() {
   renderMemos();
 }
 
-// 显示登录弹窗
 function showLoginModal() {
   document.getElementById('login-modal').style.display = 'flex';
   document.getElementById('admin-password').focus();
 }
 
-// 隐藏登录弹窗
 function hideLoginModal() {
   document.getElementById('login-modal').style.display = 'none';
   document.getElementById('admin-password').value = '';
 }
 
-// 登录
 function login() {
   const password = document.getElementById('admin-password').value;
   if (password === ADMIN_PASSWORD) {
@@ -323,56 +295,41 @@ function login() {
   }
 }
 
-// 退出登录
 function logout() {
   isAdmin = false;
   localStorage.removeItem('admin_login_time');
   updateAdminUI();
 }
 
-// 加载备忘录 - 优先从 localStorage 读取，如果没有则从 JSON 文件加载
 function loadMemos() {
-  // 首先尝试从 localStorage 加载
   const savedData = localStorage.getItem('memos_data');
   if (savedData) {
     try {
       const data = JSON.parse(savedData);
       memos = data.memos || [];
-      renderMemos();
-      updateStats();
-      updateTabCounts();
-      return;
     } catch (e) {
-      console.error('从 localStorage 加载失败:', e);
+      memos = [];
     }
   }
   
-  // 如果 localStorage 没有数据，从 JSON 文件加载
   fetch('{{ site.baseurl }}/assets/data/memos.json')
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error('加载失败');
-    })
+    .then(response => response.json())
     .then(data => {
-      memos = data.memos || [];
-      // 保存到 localStorage
-      saveMemos();
-      renderMemos();
-      updateStats();
-      updateTabCounts();
+      if (memos.length === 0) {
+        memos = data.memos || [];
+        saveMemos();
+      }
     })
     .catch(e => {
       console.error('加载备忘录失败:', e);
-      memos = [];
+    })
+    .finally(() => {
       renderMemos();
       updateStats();
       updateTabCounts();
     });
 }
 
-// 保存备忘录到 localStorage (临时存储)
 function saveMemos() {
   const data = {
     memos: memos,
@@ -381,7 +338,6 @@ function saveMemos() {
   localStorage.setItem('memos_data', JSON.stringify(data));
 }
 
-// 渲染备忘录
 function renderMemos() {
   const list = document.getElementById('memo-list');
   const searchText = document.getElementById('memo-search')?.value.toLowerCase() || '';
@@ -392,7 +348,6 @@ function renderMemos() {
     return matchCategory && matchSearch;
   });
   
-  // 排序
   const sortType = document.getElementById('memo-sort')?.value || 'newest';
   filtered.sort((a, b) => {
     switch(sortType) {
@@ -419,7 +374,7 @@ function renderMemos() {
   
   list.innerHTML = filtered.map(memo => {
     const cat = categories[memo.category] || categories.todo;
-    const isOverdue = memo.deadline && !memo.completed && new Date(memo.deadline) < new Date();
+    const isOverdue = memo.deadline && !memo.completed && new Date(memo.deadline + 'T23:59:59') < new Date();
     const deadlineText = memo.deadline ? formatDate(memo.deadline) : '';
     const checkboxId = 'cb-' + memo.id.replace(/[^a-zA-Z0-9]/g, '-');
     
@@ -447,11 +402,10 @@ function renderMemos() {
   }).join('');
 }
 
-// 切换完成状态
 function toggleComplete(id, event) {
   if (!isAdmin) {
     event.preventDefault();
-    showTooltip('非管理员无法更改');
+    showTooltip('非管理员无法更改', event);
     return false;
   }
   
@@ -466,8 +420,7 @@ function toggleComplete(id, event) {
   return true;
 }
 
-// 显示小提示（跟随鼠标）
-function showTooltip(message) {
+function showTooltip(message, event) {
   const tooltip = document.createElement('div');
   tooltip.className = 'mini-tooltip';
   tooltip.textContent = message;
@@ -484,20 +437,16 @@ function showTooltip(message) {
   `;
   document.body.appendChild(tooltip);
   
-  // 定位到鼠标位置
   const x = event.clientX;
   const y = event.clientY;
   tooltip.style.left = (x - tooltip.offsetWidth / 2) + 'px';
   tooltip.style.top = (y - tooltip.offsetHeight - 10) + 'px';
   
-  // 1.5秒后消失
   setTimeout(() => {
     tooltip.remove();
   }, 1500);
 }
 
-// 删除备忘录
-// 删除确认弹窗
 let deleteTargetId = null;
 
 function showDeleteModal(id) {
@@ -526,11 +475,9 @@ function deleteMemo(id) {
     showToast('请先登录管理员账号', 'warning');
     return;
   }
-  
   showDeleteModal(id);
 }
 
-// 编辑备忘录 - 使用自定义弹窗
 function editMemo(id) {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
@@ -540,18 +487,15 @@ function editMemo(id) {
   const memo = memos.find(m => m.id === id);
   if (!memo) return;
   
-  // 填充弹窗数据
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-text').value = memo.text;
   document.getElementById('edit-category').value = memo.category;
   document.getElementById('edit-date').value = memo.deadline || '';
   
-  // 显示弹窗
   document.getElementById('edit-modal').style.display = 'flex';
   document.getElementById('edit-text').focus();
 }
 
-// 保存编辑
 function saveEditMemo() {
   const id = document.getElementById('edit-id').value;
   const text = document.getElementById('edit-text').value.trim();
@@ -578,17 +522,14 @@ function saveEditMemo() {
   hideEditModal();
 }
 
-// 隐藏编辑弹窗
 function hideEditModal() {
   document.getElementById('edit-modal').style.display = 'none';
 }
 
-// 清除编辑日期
 function clearEditDate() {
   document.getElementById('edit-date').value = '';
 }
 
-// 设为今天日期
 function setTodayDate() {
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -597,8 +538,6 @@ function setTodayDate() {
   document.getElementById('edit-date').value = `${yyyy}-${mm}-${dd}`;
 }
 
-// 快速添加区设为今天
-// 显示添加标签弹窗
 let selectedColor = '#f59e0b';
 function showAddCategory() {
   if (!isAdmin) {
@@ -608,25 +547,21 @@ function showAddCategory() {
   document.getElementById('category-modal').style.display = 'flex';
   document.getElementById('new-category-name').value = '';
   document.getElementById('new-category-name').focus();
-  // 重置颜色选择
   document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
   document.querySelector('.color-btn[data-color="#f59e0b"]')?.classList.add('selected');
   selectedColor = '#f59e0b';
 }
 
-// 隐藏添加标签弹窗
 function hideCategoryModal() {
   document.getElementById('category-modal').style.display = 'none';
 }
 
-// 选择颜色
 function selectColor(color) {
   selectedColor = color;
   document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
   document.querySelector(`.color-btn[data-color="${color}"]`)?.classList.add('selected');
 }
 
-// 添加新标签
 function addNewCategory() {
   const name = document.getElementById('new-category-name').value.trim();
   if (!name) {
@@ -634,20 +569,15 @@ function addNewCategory() {
     return;
   }
   
-  // 生成唯一key
   const key = 'cat_' + Date.now();
   categories[key] = { name, color: selectedColor };
   saveCategories();
   renderCategories();
-  
-  // 选中新标签
   document.getElementById('edit-category').value = key;
-  
   hideCategoryModal();
   showToast('标签添加成功！', 'success');
 }
 
-// 筛选备忘录
 function filterMemo(category) {
   currentFilter = category;
   
@@ -662,13 +592,12 @@ function filterMemo(category) {
   renderMemos();
 }
 
-// 更新统计
 function updateStats() {
   const total = memos.length;
   const completed = memos.filter(m => m.completed).length;
   const pending = total - completed;
   const overdue = memos.filter(m => {
-    return m.deadline && !m.completed && new Date(m.deadline) < new Date();
+    return m.deadline && !m.completed && new Date(m.deadline + 'T23:59:59') < new Date();
   }).length;
   
   document.getElementById('total-count').textContent = total;
@@ -677,7 +606,6 @@ function updateStats() {
   document.getElementById('overdue-count').textContent = overdue;
 }
 
-// 更新标签计数
 function updateTabCounts() {
   document.getElementById('count-all').textContent = memos.length;
   Object.keys(categories).forEach(cat => {
@@ -687,7 +615,6 @@ function updateTabCounts() {
   });
 }
 
-// 导出数据
 function exportMemos() {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
@@ -708,7 +635,6 @@ function exportMemos() {
   URL.revokeObjectURL(url);
 }
 
-// 清空全部
 function clearAllMemos() {
   if (!isAdmin) {
     showToast('请先登录管理员账号', 'warning');
@@ -723,7 +649,6 @@ function clearAllMemos() {
   updateTabCounts();
 }
 
-// 格式化日期
 function formatDate(dateStr) {
   const date = new Date(dateStr + 'T00:00:00');
   const now = new Date();
@@ -736,7 +661,6 @@ function formatDate(dateStr) {
   }
 }
 
-// 格式化时间
 function formatTime(dateStr) {
   const date = new Date(dateStr);
   const now = new Date();
@@ -750,14 +674,12 @@ function formatTime(dateStr) {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
-// HTML转义
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// 显示提示
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
   toast.textContent = message;
@@ -767,16 +689,19 @@ function showToast(message, type = 'info') {
   }, 2500);
 }
 
-// 初始化
 document.addEventListener('DOMContentLoaded', function() {
   init();
-  // 为页面添加 memo-page 类用于样式优化
   document.querySelector('.page-container')?.classList.add('memo-page');
+  
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('login-modal')) {
+      e.target.style.display = 'none';
+    }
+  });
 });
 </script>
 
 <style>
-/* Toast 提示 */
 .toast {
   position: fixed;
   top: 80px;
@@ -814,7 +739,6 @@ document.addEventListener('DOMContentLoaded', function() {
   font-size: 0.95rem;
 }
 
-/* 管理员状态 - 固定在右上角 */
 .admin-status {
   position: fixed;
   top: 80px;
@@ -873,7 +797,6 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-secondary);
 }
 
-/* 登录弹窗 */
 .login-modal {
   position: fixed;
   top: 0;
@@ -949,7 +872,6 @@ document.addEventListener('DOMContentLoaded', function() {
   margin-top: 1rem;
 }
 
-/* 编辑弹窗样式 */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -979,6 +901,33 @@ document.addEventListener('DOMContentLoaded', function() {
   border-color: var(--primary-color);
 }
 
+.memo-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.memo-date {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.memo-date::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 .btn-small {
   padding: 0.4rem 0.75rem;
   border: 1px solid var(--border-color);
@@ -988,7 +937,7 @@ document.addEventListener('DOMContentLoaded', function() {
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
-  margin-left: 0.5rem;
+  margin-left: 0.25rem;
 }
 
 .btn-small:hover {
@@ -997,7 +946,6 @@ document.addEventListener('DOMContentLoaded', function() {
   border-color: var(--primary-color);
 }
 
-/* 颜色选择器 */
 .color-picker {
   display: flex;
   gap: 0.5rem;
@@ -1023,50 +971,11 @@ document.addEventListener('DOMContentLoaded', function() {
   box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--text-primary);
 }
 
-/* 添加区域 */
 .memo-add {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
-}
-
-.memo-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.875rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-
-.memo-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.memo-select,
-.memo-date {
-  padding: 0.875rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-/* 日期选择器在暗色模式下的样式 */
-.memo-date::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  cursor: pointer;
-}
-
-.memo-date:hover::-webkit-calendar-picker-indicator {
-  opacity: 0.8;
 }
 
 .memo-btn {
@@ -1092,7 +1001,6 @@ document.addEventListener('DOMContentLoaded', function() {
   text-align: center;
 }
 
-/* 工具栏 */
 .memo-toolbar {
   display: flex;
   gap: 1rem;
@@ -1130,7 +1038,6 @@ document.addEventListener('DOMContentLoaded', function() {
   cursor: pointer;
 }
 
-/* 分类标签 */
 .memo-tabs {
   display: flex;
   gap: 0.5rem;
@@ -1168,7 +1075,6 @@ document.addEventListener('DOMContentLoaded', function() {
   border-radius: 10px;
 }
 
-/* 列表 */
 .memo-list {
   display: flex;
   flex-direction: column;
@@ -1215,7 +1121,6 @@ document.addEventListener('DOMContentLoaded', function() {
   background-color: rgba(239, 68, 68, 0.05);
 }
 
-/* 复选框 */
 .memo-checkbox {
   position: relative;
   flex-shrink: 0;
@@ -1247,11 +1152,6 @@ document.addEventListener('DOMContentLoaded', function() {
   color: white;
   font-size: 14px;
   line-height: 18px;
-}
-
-.memo-checkbox input:disabled + label {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .memo-content {
@@ -1324,7 +1224,6 @@ document.addEventListener('DOMContentLoaded', function() {
   color: #dc2626;
 }
 
-/* 统计 */
 .memo-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1352,7 +1251,6 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-secondary);
 }
 
-/* 操作按钮 */
 .memo-actions {
   display: flex;
   gap: 1rem;
@@ -1384,7 +1282,6 @@ document.addEventListener('DOMContentLoaded', function() {
   color: #ef4444;
 }
 
-/* 紧凑排版 */
 .memo-container.compact .memo-list {
   gap: 0.5rem;
 }
@@ -1452,15 +1349,6 @@ document.addEventListener('DOMContentLoaded', function() {
   gap: 0.5rem;
 }
 
-.memo-container.compact .memo-input,
-.memo-container.compact .memo-select,
-.memo-container.compact .memo-date,
-.memo-container.compact .memo-btn {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
-}
-
-/* 备忘录页面标题优化 */
 .memo-page .page-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -1475,14 +1363,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 @media (max-width: 768px) {
-  .memo-add {
-    flex-direction: column;
-  }
-  
-  .memo-add > * {
-    width: 100%;
-  }
-  
   .memo-toolbar {
     flex-direction: column;
   }

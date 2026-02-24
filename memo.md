@@ -3,15 +3,15 @@ layout: page
 title: 备忘录
 ---
 
+<!-- 右上角管理员状态 -->
+<div id="admin-status" class="admin-status">
+  <span id="login-text">访客模式 - 仅可查看</span>
+  <button id="login-btn" onclick="showLoginModal()" class="admin-btn">管理员登录</button>
+  <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
+</div>
+
 <div class="memo-container">
   <p class="memo-intro">记录待办事项、学习计划和重要提醒。</p>
-  
-  <!-- 管理员登录状态 -->
-  <div id="admin-status" class="admin-status">
-    <span id="login-text">访客模式 - 仅可查看</span>
-    <button id="login-btn" onclick="showLoginModal()" class="admin-btn">管理员登录</button>
-    <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
-  </div>
   
   <!-- 登录弹窗 -->
   <div id="login-modal" class="login-modal" style="display: none;">
@@ -226,8 +226,24 @@ function logout() {
   updateAdminUI();
 }
 
-// 加载备忘录 - 从 JSON 文件
+// 加载备忘录 - 优先从 localStorage 读取，如果没有则从 JSON 文件加载
 function loadMemos() {
+  // 首先尝试从 localStorage 加载
+  const savedData = localStorage.getItem('memos_data');
+  if (savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      memos = data.memos || [];
+      renderMemos();
+      updateStats();
+      updateTabCounts();
+      return;
+    } catch (e) {
+      console.error('从 localStorage 加载失败:', e);
+    }
+  }
+  
+  // 如果 localStorage 没有数据，从 JSON 文件加载
   fetch('{{ site.baseurl }}/assets/data/memos.json')
     .then(response => {
       if (response.ok) {
@@ -237,6 +253,8 @@ function loadMemos() {
     })
     .then(data => {
       memos = data.memos || [];
+      // 保存到 localStorage
+      saveMemos();
       renderMemos();
       updateStats();
       updateTabCounts();
@@ -533,17 +551,20 @@ document.addEventListener('DOMContentLoaded', init);
   font-size: 0.95rem;
 }
 
-/* 管理员状态 */
+/* 管理员状态 - 固定在右上角 */
 .admin-status {
+  position: fixed;
+  top: 80px;
+  right: 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
   background-color: var(--bg-primary);
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  font-size: 0.85rem;
 }
 
 #login-text {

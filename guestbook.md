@@ -3,6 +3,29 @@ layout: page
 title: 留言板
 ---
 
+<!-- 自定义提示 -->
+<div id="toast" class="toast"></div>
+
+<!-- 右上角管理员状态 -->
+<div id="admin-status" class="admin-status">
+  <span id="login-text">访客模式</span>
+  <button id="login-btn" onclick="showLoginModal()" class="admin-btn">管理员登录</button>
+  <button id="logout-btn" onclick="logout()" class="admin-btn" style="display: none;">退出登录</button>
+</div>
+
+<!-- 登录弹窗 -->
+<div id="login-modal" class="login-modal" style="display: none;">
+  <div class="login-content">
+    <h3>管理员登录</h3>
+    <input type="password" id="admin-password" placeholder="请输入密码" class="login-input">
+    <div class="login-actions">
+      <button onclick="login()" class="login-submit">登录</button>
+      <button onclick="hideLoginModal()" class="login-cancel">取消</button>
+    </div>
+    <p class="login-hint">默认密码: admin123</p>
+  </div>
+</div>
+
 <div class="guestbook-container">
   <div class="guestbook-intro">
     <h2>欢迎留下你的足迹</h2>
@@ -40,27 +63,121 @@ title: 留言板
 </div>
 
 <script>
+let isAdmin = false;
+const ADMIN_PASSWORD = 'admin123';
+
+// 检查登录状态
+function checkLoginStatus() {
+  const loginTime = localStorage.getItem('guestbook_admin_login_time');
+  if (loginTime) {
+    const hoursSinceLogin = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
+    if (hoursSinceLogin < 24) {
+      isAdmin = true;
+    } else {
+      localStorage.removeItem('guestbook_admin_login_time');
+    }
+  }
+  updateAdminUI();
+}
+
+// 更新管理员界面
+function updateAdminUI() {
+  const loginText = document.getElementById('login-text');
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  if (isAdmin) {
+    loginText.textContent = '管理员模式';
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+  } else {
+    loginText.textContent = '访客模式';
+    loginBtn.style.display = 'inline-block';
+    logoutBtn.style.display = 'none';
+  }
+  
+  loadGuestbookMessages();
+}
+
+// 显示登录弹窗
+function showLoginModal() {
+  document.getElementById('login-modal').style.display = 'flex';
+  document.getElementById('admin-password').focus();
+}
+
+// 隐藏登录弹窗
+function hideLoginModal() {
+  document.getElementById('login-modal').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+}
+
+// 登录
+function login() {
+  const password = document.getElementById('admin-password').value;
+  if (password === ADMIN_PASSWORD) {
+    isAdmin = true;
+    localStorage.setItem('guestbook_admin_login_time', Date.now().toString());
+    hideLoginModal();
+    updateAdminUI();
+    showToast('登录成功！', 'success');
+  } else {
+    showToast('密码错误！', 'error');
+  }
+}
+
+// 退出登录
+function logout() {
+  isAdmin = false;
+  localStorage.removeItem('guestbook_admin_login_time');
+  updateAdminUI();
+  showToast('已退出登录', 'info');
+}
+
+// 显示提示
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
+}
+
 // 加载留言
 function loadGuestbookMessages() {
   const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
   const list = document.getElementById('guestbook-list');
   
-  if (messages.length > 0) {
-    list.innerHTML = messages.map(msg => `
-      <div class="guestbook-item">
-        <div class="guestbook-avatar">
-          <span>${msg.name.charAt(0)}</span>
-        </div>
-        <div class="guestbook-content">
-          <div class="guestbook-header">
-            <span class="guestbook-name">${escapeHtml(msg.name)}</span>
-            <span class="guestbook-time">${msg.time}</span>
-          </div>
-          <p class="guestbook-text">${escapeHtml(msg.text)}</p>
-        </div>
+  if (messages.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <p>暂无留言，来发表第一条吧！</p>
       </div>
-    `).join('');
+    `;
+    return;
   }
+  
+  list.innerHTML = messages.map((msg, index) => `
+    <div class="guestbook-item" data-index="${index}">
+      <div class="guestbook-avatar">
+        <span>${msg.name.charAt(0)}</span>
+      </div>
+      <div class="guestbook-content">
+        <div class="guestbook-header">
+          <span class="guestbook-name">${escapeHtml(msg.name)}</span>
+          <span class="guestbook-time">${msg.time}</span>
+        </div>
+        <p class="guestbook-text">${escapeHtml(msg.text)}</p>
+        ${msg.reply ? `<div class="guestbook-reply"><strong>博主回复：</strong>${escapeHtml(msg.reply)}</div>` : ''}
+      </div>
+      ${isAdmin ? `
+        <div class="guestbook-actions">
+          <button onclick="replyMessage(${index})" class="action-btn reply" title="回复">↩</button>
+          <button onclick="deleteMessage(${index})" class="action-btn delete" title="删除">×</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
 }
 
 // 添加留言
@@ -71,23 +188,62 @@ function addGuestbookMessage() {
   const text = messageInput.value.trim();
   
   if (!text) {
-    alert('请输入留言内容');
+    showToast('请输入留言内容', 'warning');
+    messageInput.focus();
     return;
   }
   
   const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
   const now = new Date();
-  const time = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const time = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
   
-  messages.unshift({ name, text, time });
+  messages.unshift({ name, text, time, reply: '' });
   localStorage.setItem('guestbook_messages', JSON.stringify(messages));
   
   // 清空输入
   nameInput.value = '';
   messageInput.value = '';
   
+  showToast('留言发表成功！', 'success');
+  
   // 重新加载
   loadGuestbookMessages();
+}
+
+// 删除留言
+function deleteMessage(index) {
+  if (!isAdmin) {
+    showToast('请先登录管理员账号', 'warning');
+    return;
+  }
+  
+  if (!confirm('确定要删除这条留言吗？')) return;
+  
+  const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
+  messages.splice(index, 1);
+  localStorage.setItem('guestbook_messages', JSON.stringify(messages));
+  
+  showToast('留言已删除', 'success');
+  loadGuestbookMessages();
+}
+
+// 回复留言
+function replyMessage(index) {
+  if (!isAdmin) {
+    showToast('请先登录管理员账号', 'warning');
+    return;
+  }
+  
+  const messages = JSON.parse(localStorage.getItem('guestbook_messages') || '[]');
+  const msg = messages[index];
+  
+  const reply = prompt('回复 ' + msg.name + '：', msg.reply || '');
+  if (reply !== null) {
+    msg.reply = reply.trim();
+    localStorage.setItem('guestbook_messages', JSON.stringify(messages));
+    showToast(reply.trim() ? '回复成功！' : '回复已删除', 'success');
+    loadGuestbookMessages();
+  }
 }
 
 // HTML转义
@@ -98,7 +254,26 @@ function escapeHtml(text) {
 }
 
 // 初始化
-loadGuestbookMessages();
+document.addEventListener('DOMContentLoaded', function() {
+  checkLoginStatus();
+  loadGuestbookMessages();
+  
+  // 回车提交
+  document.getElementById('guestbook-message').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      addGuestbookMessage();
+    }
+  });
+  
+  // 登录框回车
+  document.getElementById('admin-password').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') login();
+  });
+  
+  // 为页面添加样式类
+  document.querySelector('.page-container')?.classList.add('guestbook-page');
+});
 </script>
 
 <style>
@@ -247,6 +422,224 @@ loadGuestbookMessages();
   line-height: 1.6;
 }
 
+/* 博主回复 */
+.guestbook-reply {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-light);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.guestbook-reply strong {
+  color: var(--primary-color);
+}
+
+/* 管理员操作按钮 */
+.guestbook-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn.reply {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.action-btn.reply:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.action-btn.delete {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.action-btn.delete:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+
+/* Toast 提示 */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+.toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+/* 管理员状态 - 固定在右上角 */
+.admin-status {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  font-size: 0.85rem;
+}
+
+#login-text {
+  color: var(--text-secondary);
+}
+
+.admin-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#login-btn {
+  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  color: white;
+}
+
+#logout-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* 登录弹窗 */
+.login-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.login-content {
+  background: var(--bg-primary);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 400px;
+}
+
+.login-content h3 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.login-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.login-submit,
+.login-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-submit {
+  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  color: white;
+}
+
+.login-cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.login-hint {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* 留言板页面标题优化 */
+.guestbook-page .page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.guestbook-page .page-container {
+  padding-top: 1rem;
+}
+
 @media (max-width: 640px) {
   .guestbook-form {
     padding: 1rem;
@@ -254,12 +647,33 @@ loadGuestbookMessages();
   
   .guestbook-item {
     padding: 1rem;
+    flex-wrap: wrap;
   }
   
   .guestbook-avatar {
     width: 40px;
     height: 40px;
     font-size: 1rem;
+  }
+  
+  .guestbook-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  
+  .admin-status {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }
+  
+  .toast {
+    top: 20px;
+    width: 80%;
+    text-align: center;
   }
 }
 </style>

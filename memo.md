@@ -93,9 +93,30 @@ title: 备忘录
     </div>
   </div>
   
-  <!-- 新建按钮 (仅管理员可见) -->
-  <div class="memo-add" id="memo-add-section" style="display: none;">
-    <a href="/memo-new" class="memo-btn memo-new-btn">+ 新建备忘录</a>
+  <!-- 新建备忘录弹窗 -->
+  <div id="create-modal" class="login-modal" style="display: none;">
+    <div class="login-content">
+      <h3>新建备忘录</h3>
+      <div class="form-group">
+        <textarea id="create-text" placeholder="备忘录内容..." class="form-textarea" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label>标签：</label>
+        <select id="create-category" class="memo-select">
+        </select>
+        <button onclick="showAddCategoryFromCreate()" class="btn-small">+ 新建</button>
+      </div>
+      <div class="form-group">
+        <label>截止日期：</label>
+        <input type="date" id="create-date" class="memo-date">
+        <button onclick="setTodayDateCreate()" class="btn-small">今天</button>
+        <button onclick="clearCreateDate()" class="btn-small">清除</button>
+      </div>
+      <div class="login-actions">
+        <button onclick="saveNewMemo()" class="login-submit">保存</button>
+        <button onclick="hideCreateModal()" class="login-cancel">取消</button>
+      </div>
+    </div>
   </div>
   
   <!-- 搜索和筛选 -->
@@ -103,12 +124,14 @@ title: 备忘录
     <div class="memo-search">
       <input type="text" id="memo-search" placeholder="搜索备忘录..." class="search-input" oninput="renderMemos()">
     </div>
-    <div class="memo-sort">
+    <div class="memo-toolbar-right">
       <select id="memo-sort" class="sort-select" onchange="renderMemos()">
         <option value="newest">最新添加</option>
         <option value="oldest">最早添加</option>
         <option value="deadline">截止日期</option>
       </select>
+      <!-- 新建按钮 (仅管理员可见) -->
+      <button id="memo-add-btn" class="memo-add-btn" style="display: none;" onclick="showCreateModal()">+ 新建</button>
     </div>
   </div>
   
@@ -252,20 +275,20 @@ function updateAdminUI() {
   const loginText = document.getElementById('login-text');
   const loginBtn = document.getElementById('login-btn');
   const logoutBtn = document.getElementById('logout-btn');
-  const addSection = document.getElementById('memo-add-section');
+  const addBtn = document.getElementById('memo-add-btn');
   const actionsSection = document.getElementById('memo-actions-section');
   
   if (isAdmin) {
     loginText.textContent = '管理员模式 - 可编辑';
     loginBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
-    if (addSection) addSection.style.display = 'flex';
+    if (addBtn) addBtn.style.display = 'inline-block';
     if (actionsSection) actionsSection.style.display = 'flex';
   } else {
     loginText.textContent = '访客模式 - 仅可查看';
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
-    if (addSection) addSection.style.display = 'none';
+    if (addBtn) addBtn.style.display = 'none';
     if (actionsSection) actionsSection.style.display = 'none';
   }
   
@@ -536,6 +559,97 @@ function setTodayDate() {
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
   document.getElementById('edit-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+// 新建备忘录弹窗功能
+function showCreateModal() {
+  if (!isAdmin) {
+    showToast('请先登录管理员账号', 'warning');
+    return;
+  }
+  
+  // 初始化标签选择器
+  const createSelect = document.getElementById('create-category');
+  createSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
+    `<option value="${key}">${cat.name}</option>`
+  ).join('');
+  
+  document.getElementById('create-modal').style.display = 'flex';
+  document.getElementById('create-text').value = '';
+  document.getElementById('create-date').value = '';
+  document.getElementById('create-text').focus();
+}
+
+function hideCreateModal() {
+  document.getElementById('create-modal').style.display = 'none';
+}
+
+function clearCreateDate() {
+  document.getElementById('create-date').value = '';
+}
+
+function setTodayDateCreate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('create-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+function saveNewMemo() {
+  const text = document.getElementById('create-text').value.trim();
+  const category = document.getElementById('create-category').value;
+  const deadline = document.getElementById('create-date').value || null;
+  
+  if (!text) {
+    showToast('请输入备忘录内容', 'warning');
+    document.getElementById('create-text').focus();
+    return;
+  }
+  
+  const memo = {
+    id: 'memo-' + Date.now(),
+    text: text,
+    category: category,
+    completed: false,
+    createdAt: new Date().toISOString(),
+    deadline: deadline
+  };
+  
+  memos.unshift(memo);
+  saveMemos();
+  renderMemos();
+  updateStats();
+  updateTabCounts();
+  
+  showToast('备忘录添加成功！', 'success');
+  hideCreateModal();
+}
+
+function showAddCategoryFromCreate() {
+  showAddCategory();
+  // 保存创建弹窗的状态
+  const createText = document.getElementById('create-text').value;
+  const createCategory = document.getElementById('create-category').value;
+  const createDate = document.getElementById('create-date').value;
+  
+  // 在添加标签后恢复创建弹窗
+  const originalHideCategoryModal = hideCategoryModal;
+  hideCategoryModal = function() {
+    originalHideCategoryModal();
+    document.getElementById('create-modal').style.display = 'flex';
+    document.getElementById('create-text').value = createText;
+    document.getElementById('create-category').value = createCategory;
+    document.getElementById('create-date').value = createDate;
+    // 重新初始化标签选择器
+    const createSelect = document.getElementById('create-category');
+    createSelect.innerHTML = Object.entries(categories).map(([key, cat]) => 
+      `<option value="${key}">${cat.name}</option>`
+    ).join('');
+    document.getElementById('create-category').value = createCategory;
+    hideCategoryModal = originalHideCategoryModal;
+  };
+  document.getElementById('create-modal').style.display = 'none';
 }
 
 let selectedColor = '#f59e0b';
@@ -1006,6 +1120,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gap: 1rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .memo-search {
@@ -1028,6 +1143,12 @@ document.addEventListener('DOMContentLoaded', function() {
   border-color: var(--primary-color);
 }
 
+.memo-toolbar-right {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .sort-select {
   padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
@@ -1036,6 +1157,25 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--text-primary);
   font-size: 0.9rem;
   cursor: pointer;
+}
+
+.memo-add-btn {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.memo-add-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 .memo-tabs {

@@ -250,7 +250,9 @@ const generateTOC = () => {
   // Setup Intersection Observer for highlighting
   const observerOptions = {
     root: null,
-    rootMargin: '-100px 0px -60% 0px',
+    // Top margin: -90px (intersection starts 90px from top, accommodating the 100px scroll-margin)
+    // Bottom margin: -70% (active zone is the top chunk of the screen)
+    rootMargin: '-90px 0px -70% 0px', 
     threshold: 0
   };
 
@@ -258,12 +260,24 @@ const generateTOC = () => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const id = entry.target.id;
+        // Remove active class from all links
         document.querySelectorAll('.toc-link').forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('data-id') === id) {
-            link.classList.add('active');
-          }
         });
+        // Add active class to current link
+        const activeLink = document.querySelector(`.toc-link[data-id="${id}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+          // Auto-scroll the TOC container to keep active link in view
+          const tocContainer = document.querySelector('.toc-container');
+          if (tocContainer) {
+             const linkRect = activeLink.getBoundingClientRect();
+             const containerRect = tocContainer.getBoundingClientRect();
+             if (linkRect.top < containerRect.top || linkRect.bottom > containerRect.bottom) {
+                activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' });
+             }
+          }
+        }
       }
     });
   }, observerOptions);

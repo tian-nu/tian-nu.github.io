@@ -76,8 +76,14 @@
   padding: 0;
 }
 
+/* Smooth Scroll & Offset for Fixed Header */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: var(--header-height); /* For modern browsers */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  scroll-margin-top: 100px; /* Offset for anchor links */
 }
 
 body {

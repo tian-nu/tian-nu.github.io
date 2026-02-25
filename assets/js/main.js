@@ -23,6 +23,18 @@ const toggleTheme = () => {
   
   html.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
+
+  // Sync with Giscus
+  const iframe = document.querySelector('iframe.giscus-frame');
+  if (iframe) {
+    iframe.contentWindow.postMessage({
+      giscus: {
+        setConfig: {
+          theme: newTheme === 'dark' ? 'dark' : 'light'
+        }
+      }
+    }, 'https://giscus.app');
+  }
 };
 
 if (themeToggle) {

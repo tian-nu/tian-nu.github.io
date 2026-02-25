@@ -250,9 +250,9 @@ const generateTOC = () => {
   // Setup Intersection Observer for highlighting
   const observerOptions = {
     root: null,
-    // Top margin: -90px (intersection starts 90px from top, accommodating the 100px scroll-margin)
-    // Bottom margin: -70% (active zone is the top chunk of the screen)
-    rootMargin: '-90px 0px -70% 0px', 
+    // Top margin: -64px (intersection starts 64px from top, accommodating the 66px scroll-margin)
+    // Bottom margin: -80% (active zone is the top 20% chunk of the screen)
+    rootMargin: '-64px 0px -80% 0px', 
     threshold: 0
   };
 

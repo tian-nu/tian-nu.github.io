@@ -170,16 +170,21 @@ layout: default
           const postKey = 'comments_' + pageId;
           const ADMIN_PASSWORD = 'admin123';
           let comments = JSON.parse(localStorage.getItem(postKey) || '[]');
-          let isCommentAdmin = localStorage.getItem('comment_admin_logged_in') === 'true';
           let deleteCommentIndex = null;
+          
+          // 检查是否已登录（使用与备忘录相同的登录状态）
+          function checkIsAdmin() {
+            return !!localStorage.getItem('admin_login_time');
+          }
           
           // 更新管理员状态显示
           function updateCommentAdminStatus() {
+            const isAdmin = checkIsAdmin();
             const loginText = document.getElementById('comment-login-text-' + pageId);
             const loginBtn = document.getElementById('comment-login-btn-' + pageId);
             const logoutBtn = document.getElementById('comment-logout-btn-' + pageId);
             
-            if (isCommentAdmin) {
+            if (isAdmin) {
               loginText.textContent = '管理员模式 - 可删除评论';
               loginText.style.color = 'var(--primary-color)';
               loginBtn.style.display = 'none';
@@ -192,13 +197,15 @@ layout: default
             }
             
             // 重新渲染评论以显示/隐藏删除按钮
-            renderComments();
+            window.renderPostComments{{ page.url | slugify | replace: '-', '_' }}();
           }
           
           // 渲染评论
           window.renderPostComments{{ page.url | slugify | replace: '-', '_' }} = function() {
             const container = document.getElementById('post-comments-' + pageId);
             if (!container) return;
+            
+            const isAdmin = checkIsAdmin();
             
             if (comments.length === 0) {
               container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">暂无评论，来发表第一条吧！</p>';
@@ -217,7 +224,7 @@ layout: default
                       <div style="color: var(--text-muted); font-size: 0.8rem;">${c.time}</div>
                     </div>
                   </div>
-                  ${isCommentAdmin ? `<button onclick="showDeleteCommentModal{{ page.url | slugify | replace: '-', '_' }}(${i})" style="padding: 0.25rem 0.75rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">删除</button>` : ''}
+                  ${isAdmin ? `<button onclick="showDeleteCommentModal{{ page.url | slugify | replace: '-', '_' }}(${i})" style="padding: 0.25rem 0.75rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">删除</button>` : ''}
                 </div>
                 <p style="color: var(--text-secondary); margin: 0; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(c.text)}</p>
               </div>
@@ -256,7 +263,7 @@ layout: default
           
           // 显示删除确认弹窗
           window.showDeleteCommentModal{{ page.url | slugify | replace: '-', '_' }} = function(index) {
-            if (!isCommentAdmin) {
+            if (!checkIsAdmin()) {
               showCommentToast('请先登录管理员账号', 'warning');
               return;
             }
@@ -281,7 +288,7 @@ layout: default
             showCommentToast('评论已删除', 'success');
           };
           
-          // 登录相关
+          // 登录相关 - 使用与备忘录相同的登录状态
           window.commentLogin{{ page.url | slugify | replace: '-', '_' }} = function() {
             document.getElementById('comment-login-modal-' + pageId).style.display = 'flex';
             document.getElementById('comment-admin-password-' + pageId).value = '';
@@ -295,8 +302,8 @@ layout: default
           window.commentDoLogin{{ page.url | slugify | replace: '-', '_' }} = function() {
             const password = document.getElementById('comment-admin-password-' + pageId).value;
             if (password === ADMIN_PASSWORD) {
-              isCommentAdmin = true;
-              localStorage.setItem('comment_admin_logged_in', 'true');
+              // 使用与备忘录相同的登录状态存储方式
+              localStorage.setItem('admin_login_time', Date.now().toString());
               window.hideCommentLoginModal{{ page.url | slugify | replace: '-', '_' }}();
               updateCommentAdminStatus();
               showCommentToast('登录成功！', 'success');
@@ -306,8 +313,8 @@ layout: default
           };
           
           window.commentLogout{{ page.url | slugify | replace: '-', '_' }} = function() {
-            isCommentAdmin = false;
-            localStorage.removeItem('comment_admin_logged_in');
+            // 使用与备忘录相同的登出方式
+            localStorage.removeItem('admin_login_time');
             updateCommentAdminStatus();
             showCommentToast('已退出登录', 'success');
           };

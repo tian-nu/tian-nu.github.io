@@ -964,6 +964,51 @@ img {
   margin-bottom: var(--space-lg);
 }
 
+/* 本地评论系统 */
+.local-comments-system {
+  margin-top: var(--space-lg);
+}
+
+.comment-admin-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.comment-form {
+  margin-top: var(--space-lg);
+}
+
+.comment-form input:focus,
+.comment-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* 评论项动画 */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
 /* ========================================
    页脚
    ======================================== */

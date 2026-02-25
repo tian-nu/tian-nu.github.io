@@ -204,25 +204,59 @@ const generateTOC = () => {
   }
   
   let tocHTML = '<ul>';
-  let currentLevel = 2;
+  let currentLevel = 2; // Start with h2
   
   headings.forEach((heading, index) => {
     const level = parseInt(heading.tagName.charAt(1));
-    const id = `heading-${index}`;
+    const id = heading.id || `heading-${index}`;
     heading.id = id;
     
     if (level > currentLevel) {
-      tocHTML += '<ul>';
+      // Add nested list
+      for (let i = 0; i < level - currentLevel; i++) {
+        tocHTML += '<ul>';
+      }
     } else if (level < currentLevel) {
-      tocHTML += '</ul>';
+      // Close nested list
+      for (let i = 0; i < currentLevel - level; i++) {
+        tocHTML += '</ul>';
+      }
     }
     
-    tocHTML += `<li><a href="#${id}">${heading.textContent}</a></li>`;
+    tocHTML += `<li><a href="#${id}" class="toc-link" data-id="${id}">${heading.textContent}</a></li>`;
     currentLevel = level;
   });
   
+  // Close any remaining open lists
+  for (let i = 0; i < currentLevel - 2; i++) {
+    tocHTML += '</ul>';
+  }
+  
   tocHTML += '</ul>';
   toc.innerHTML = tocHTML;
+
+  // Setup Intersection Observer for highlighting
+  const observerOptions = {
+    root: null,
+    rootMargin: '-100px 0px -60% 0px',
+    threshold: 0
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.toc-link').forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('data-id') === id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }, observerOptions);
+
+  headings.forEach(heading => observer.observe(heading));
 };
 
 // ========================================

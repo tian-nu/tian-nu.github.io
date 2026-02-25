@@ -1227,3 +1227,195 @@ img {
 .post-card:nth-child(3) { animation-delay: 0.3s; }
 .post-card:nth-child(4) { animation-delay: 0.4s; }
 .post-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* ========================================
+   Custom Visual Improvements
+   ======================================== */
+
+/* Hero Section Enhancement */
+.hero-section {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  padding: 4rem 2rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  margin-bottom: 3rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+  opacity: 0.1;
+  z-index: 0;
+  animation: rotate 20s linear infinite;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(120deg, var(--primary-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Card Hover Effects */
+.post-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.post-card-image img {
+  transition: transform 0.5s ease;
+}
+
+.post-card:hover .post-card-image img {
+  transform: scale(1.05);
+}
+
+/* TOC Styling */
+.toc-container {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: calc(var(--header-height) + 20px);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+}
+
+.toc-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-light);
+  color: var(--text-primary);
+}
+
+.toc-nav ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.toc-nav ul ul {
+  padding-left: 1.25rem;
+  margin-top: 0.25rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.toc-nav li {
+  margin-bottom: 0.5rem;
+}
+
+.toc-link {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  padding: 0.25rem 0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+.toc-link:hover {
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.toc-link.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Category & Tag Pills */
+.post-category, .tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.post-category {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.post-category:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.tag {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.tag:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Code Blocks */
+pre {
+  background: #1e1e1e !important;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+}
+
+code {
+  font-family: var(--font-mono);
+}

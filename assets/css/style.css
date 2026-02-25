@@ -1432,11 +1432,46 @@ img {
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: calc(var(--header-height) + 20px);
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
   border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+/* Sticky TOC for Desktop */
+@media (min-width: 1025px) {
+  .post-container {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    align-items: start;
+    position: relative;
+  }
+
+  .post-header, .post-cover, .post-footer, .comments-section {
+    grid-column: 1 / -1;
+  }
+
+  .post-content {
+    grid-column: 1 / 2;
+    min-width: 0; /* Prevent overflow */
+  }
+
+  .toc-container.sticky-toc {
+    grid-column: 2 / 3;
+    position: sticky;
+    top: calc(var(--header-height) + 20px);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    margin-bottom: 0;
+  }
+}
+
+/* Hide TOC on smaller screens or style differently */
+@media (max-width: 1024px) {
+  .toc-container.sticky-toc {
+    position: static;
+    margin-bottom: 2rem;
+    max-height: none;
+  }
 }
 
 .toc-title {

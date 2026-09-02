@@ -1,9 +1,12 @@
-/* 天努的博客 — 自定义排版覆盖
-   收紧 Stack 主题默认字号（正文默认 1.6rem≈25.6px 偏大，行距 1.85 偏旷） */
+/* 天努的博客 — 自定义排版
+   字体预设（改一行即可切换，改完刷新网页生效）：
+   紧凑: --article-font-size: 1rem;    (16px)
+   适中: --article-font-size: 1.25rem; (20px)   ← 当前
+   宽松: --article-font-size: 1.6rem;  (25.6px, 主题原版) */
 :root {
-    --article-font-size: 1.05rem;
-    --article-line-height: 1.7;
-    --card-padding: 16px;
+    --article-font-size: 1.25rem;
+    --article-line-height: 1.75;   /* 行距 1.85→1.75，避免过空 */
+    --card-padding: 18px;          /* 卡片内边距 30px→18px */
     --card-border-radius: 8px;
 }
 
@@ -14,7 +17,7 @@
 
 .article-list article .article-title,
 .article-list--compact .article-title {
-    font-size: 1.12rem;
+    font-size: 1.15rem;
 }
 
 .article-header .article-title {

@@ -1,0 +1,40 @@
+# Decap CMS 配置 — 网页后台写作
+# 登录入口：https://nusky.cn/admin/
+# 说明：写文章后保存 = 直接 commit 到 GitHub main 分支，GitHub Actions 自动重新构建部署。
+backend:
+  name: github
+  repo: tian-nu/tian-nu.github.io
+  branch: main
+  # 隐式 OAuth：需要在 GitHub 创建 OAuth App（回调地址 https://nusky.cn/），
+  # 创建后把 client_id 填到下方并部署，即可登录。
+
+media_folder: static/images/uploads
+public_folder: /images/uploads
+
+collections:
+  - name: post
+    label: 文章
+    folder: content/post
+    create: true
+    path: "{{slug}}/index.zh.md"
+    slug: "{{slug}}"
+    nested:
+      depth: 1
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 英文别名(URL), name: slug, widget: string, required: false }
+      - { label: 摘要, name: description, widget: string, required: false }
+      - { label: 发布日期, name: date, widget: datetime, format: "YYYY-MM-DDTHH:mm:ssZ" }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 分类, name: categories, widget: list, required: false }
+      - { label: 正文, name: body, widget: markdown }
+  - name: page
+    label: 单页（关于等）
+    folder: content/page
+    create: true
+    path: "{{slug}}/index.zh.md"
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 英文别名(URL), name: slug, widget: string, required: false }
+      - { label: 正文, name: body, widget: markdown }

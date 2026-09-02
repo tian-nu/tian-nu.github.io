@@ -72,16 +72,31 @@ categories: ["分类"]
 
 写完 `git add -A && git commit -m "新文章" && git push`，GitHub Actions 自动构建并双端部署。
 
+## 网页后台写作（Decap CMS）
+
+新站内置网页后台，上线后可免命令行写文章：
+
+1. 打开 `https://nusky.cn/admin/`，用 GitHub 账号登录（OAuth）
+2. 左侧「文章」→ 新建 → 填标题/正文/标签 → 发布
+3. 保存即自动 commit 并触发 GitHub Actions 重新构建部署
+
+启用步骤（需要你操作一次，约 3 分钟）：
+1. GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
+   - Homepage URL: `https://nusky.cn/`
+   - Authorization callback URL: `https://nusky.cn/`
+2. 把生成的 Client ID 发我，我填进 `static/admin/config.yml`
+3. 上线后直接访问 `https://nusky.cn/admin/` 登录使用
+
+备选：不装后台也能在 GitHub 网页直接编辑 md 文件（每次保存自动重新构建）。
+
 ## 首次上线步骤（GitHub Pages 先行，无需等备案）
 
-1. 在 GitHub 建仓库（如 `nusky-blog`），然后把本目录推上去：
-   ```bash
-   git remote add origin git@github.com:tian-nu/nusky-blog.git
-   git push -u origin main
-   ```
-2. 仓库 **Settings → Pages**：Source 选 `GitHub Actions`；Custom domain 填 `nusky.cn`，保存后按提示把 TXT 验证记录加到 DNS。
-3. 在 DNS 服务商配置下表的「备案期」记录。
-4. 等几分钟，`https://nusky.cn` 即可访问 GitHub Pages 版。
+部署目标仓库是 **`tian-nu/tian-nu.github.io`**（已有，自定义域名已绑定，历史含旧 Jekyll 站代码）：
+
+1. 仓库 **Settings → Pages**：Source 选 `GitHub Actions`（关键一步）
+2. 本仓库已配置 `.github/workflows/deploy.yml`：push 到 `main` 即自动构建并部署到 GitHub Pages
+3. 等几分钟，`https://nusky.cn` 即为新版「天努的博客」
+4. 服务器部署：备案通过后，在仓库 Secrets 配置 `SERVER_HOST / SERVER_USER / SSH_KEY` 自动启用
 
 ## DNS 记录表
 

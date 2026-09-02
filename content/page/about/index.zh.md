@@ -29,7 +29,7 @@ menu:
 
 ## 联系我
 
-- **GitHub**：[github.com/nusky](https://github.com/nusky)（占位，待更新）
+- **GitHub**：[github.com/tian-nu](https://github.com/tian-nu)
 - **Email**：[hello@nusky.cn](mailto:hello@nusky.cn)（占位）
 
 ---

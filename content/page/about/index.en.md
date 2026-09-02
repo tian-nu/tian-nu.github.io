@@ -29,7 +29,7 @@ Hi, I'm Nusky 👋. I enjoy tinkering with tech, breaking and fixing environment
 
 ## Contact
 
-- **GitHub**: [github.com/nusky](https://github.com/nusky) (placeholder)
+- **GitHub**: [github.com/tian-nu](https://github.com/tian-nu)
 - **Email**: [hello@nusky.cn](mailto:hello@nusky.cn) (placeholder)
 
 ---

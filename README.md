@@ -7,6 +7,18 @@
 
 ---
 
+## 看预览版（需要先放行端口）
+
+预览服务运行在：**http://42.194.151.133:8090/**
+
+首次打不开时，去腾讯云放行端口：
+控制台 → 云服务器 CVM → 实例 → 安全组 → 入站规则 → 添加规则：
+- 协议端口：`TCP:8090`
+- 来源：`0.0.0.0/0`（或你常用的固定 IP，更安全）
+- 策略：允许
+
+保存后立即生效，刷新浏览器即可。
+
 ## 目录结构
 
 ```
@@ -50,7 +62,7 @@ categories: ["分类"]
 
 1. 在 GitHub 建仓库（如 `nusky-blog`），然后把本目录推上去：
    ```bash
-   git remote add origin git@github.com:<你的用户名>/nusky-blog.git
+   git remote add origin git@github.com:tian-nu/nusky-blog.git
    git push -u origin main
    ```
 2. 仓库 **Settings → Pages**：Source 选 `GitHub Actions`；Custom domain 填 `nusky.cn`，保存后按提示把 TXT 验证记录加到 DNS。
@@ -63,8 +75,8 @@ categories: ["分类"]
 |---|---|---|---|---|
 | 备案期 | A | `@` | `185.199.108.153 / 109 / 110 / 111`（4条） | GitHub Pages 四段 IP |
 | 备案期 | AAAA | `@` | `2606:50c0:8000::153 / 8153 / 8353 / 8553`（4条） | IPv6（可选） |
-| 备案期 | CNAME | `www` | `<你的用户名>.github.io` | www 转发 |
-| 备案期 | TXT | `_github-pages-challenge-<用户名>` | GitHub 给的验证码 | 域名验证 |
+| 备案期 | CNAME | `www` | `tian-nu.github.io` | www 转发 |
+| 备案期 | TXT | `_github-pages-challenge-tian-nu` | GitHub 给的验证码 | 域名验证 |
 | 备案通过后 | A | `@` | `42.194.151.133` | 切回服务器主站 |
 | 备案通过后 | CNAME | `www` | `42.194.151.133`（或 A 记录） | www -> 服务器 |
 | 备案通过后 | A | `lab` | `42.194.151.133` | 服务器子域名（边缘内容用） |
@@ -111,9 +123,11 @@ sudo certbot --nginx -d nusky.cn -d www.nusky.cn
 - [ ] 写一篇新文章 push 后：Pages 与服务器都更新（自动部署生效）
 - [ ] 手机浏览器访问正常（响应式布局）
 
-## 需要用户提供 / 确认
+## 需要用户提供 / 确认（已收齐大部分）
 
-- [ ] GitHub 用户名（用于仓库名、Pages 域名、社交链接）
-- [ ] nusky.cn 的 DNS 服务商（腾讯云 DNSPod / 阿里云 / 其他？）及解析权限
-- [ ] 腾讯云备案入口确认（登录后开始提交）
-- [ ] 预览版看后：风格是否 OK（换主题/配色/栏目）
+- [x] GitHub 用户名：`tian-nu`（2026-09-02 提供）
+- [x] nusky.cn 的 DNS 服务商：腾讯云（DNSPod）
+- [x] ICP 备案：已提交，进行中（2-3 周）
+- [ ] 预览版风格确认：`http://42.194.151.133:8090/` 看完：满意 / 要调整？
+- [ ] GitHub 操作（部署公钥 + 创建仓库）见上「首次上线步骤」
+- [ ] 腾讯云安全组放行 `TCP:8090`（看预览版需要）

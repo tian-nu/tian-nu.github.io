@@ -96,6 +96,10 @@ sudo certbot --nginx -d nusky.cn -d www.nusky.cn
 然后按上表把 DNS 的 `@`/`www` 切到服务器，GitHub Pages 移到 `lab.nusky.cn` 放边缘内容。
 最后验收：浏览器打开 `https://nusky.cn`。
 
+> ⚠️ **权限说明**：以上 `sudo` 命令需要在服务器上用 root 执行。
+> 当前自动化沙箱环境没有 root 权限（容器禁用了提权），无法代为安装 Nginx。
+> 备案通过后，请通过腾讯云控制台「登录」或 SSH 登录服务器执行上述步骤。
+
 ## 需要用户提供 / 确认
 
 - [ ] GitHub 用户名（用于仓库名、Pages 域名、社交链接）

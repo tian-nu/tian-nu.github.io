@@ -1,0 +1,77 @@
+/* 页面通用样式 */
+.page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-lg);
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.page-content {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+
+.page-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: var(--space-2xl);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-md);
+}
+
+.page-content p {
+  margin-bottom: var(--space-lg);
+}
+
+.page-content ul,
+.page-content ol {
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-xl);
+}
+
+.page-content li {
+  margin-bottom: var(--space-sm);
+}
+
+.page-content a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.page-content code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.page-content pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--space-lg);
+}
+
+.page-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}

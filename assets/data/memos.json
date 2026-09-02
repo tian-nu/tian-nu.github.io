@@ -1,0 +1,37 @@
+{
+  "memos": [
+    {
+      "id": "memo-1704067200000",
+      "text": "完善博客的响应式设计",
+      "category": "todo",
+      "completed": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "deadline": "2024-01-15"
+    },
+    {
+      "id": "memo-1704153600000",
+      "text": "学习 Jekyll 高级用法",
+      "category": "learning",
+      "completed": false,
+      "createdAt": "2024-01-02T00:00:00.000Z",
+      "deadline": null
+    },
+    {
+      "id": "memo-1704240000000",
+      "text": "添加一个照片墙页面",
+      "category": "idea",
+      "completed": false,
+      "createdAt": "2024-01-03T00:00:00.000Z",
+      "deadline": null
+    },
+    {
+      "id": "memo-1704326400000",
+      "text": "购买域名",
+      "category": "reminder",
+      "completed": true,
+      "createdAt": "2024-01-04T00:00:00.000Z",
+      "deadline": "2024-01-10"
+    }
+  ],
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

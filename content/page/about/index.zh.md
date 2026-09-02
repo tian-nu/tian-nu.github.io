@@ -2,8 +2,8 @@
 title: 关于
 slug: about
 description: 关于本站及其作者的一切。
-date: 2026-01-26
-lastmod: 2026-01-26
+date: 2026-09-02T12:00:00+08:00
+lastmod: 2026-09-02T12:00:00+08:00
 menu:
     main: 
         weight: -90
@@ -11,36 +11,27 @@ menu:
             icon: user
 ---
 
-## 这是给谁看的？
+## 关于本站
 
-这是一个示例**关于**页面。你可以用它来介绍你自己、你的博客或你的项目。
+这是 **Nusky 的个人博客**（nusky.cn），记录我的折腾、学习和分享。
+
+博客采用 **Hugo + Stack 主题**，开源构建流程：
+
+- **主站**：运行在这台腾讯云服务器上（备案完成后正式上线）
+- **镜像/边缘内容**：GitHub Pages
+- **发布方式**：写一篇 Markdown → `git push` → 自动构建部署
 
 ## 关于作者
 
-你好！我是一个热衷于博客和开源的爱好者。我喜欢探索新技术并向社区分享我的经验。
+你好，我是 Nusky 👋。喜欢捣鼓技术、折腾环境、积累有用的东西。
 
-### 我的旅程
-
-我在 10 多年前开始了我的 Web 开发之旅。自那以后，我参与了许多项目，从个人博客到大规模企业应用。
-
-### 技能
-
-- **前端**: HTML, CSS, JavaScript, React, Vue
-- **后端**: Node.js, Python, Go
-- **工具**: Git, Docker, Hugo, Neovim
+> 此页面是**草稿**，正式上线前我会补齐个人信息——比如你的职业、兴趣、项目经历，以及有效的联系方式。
 
 ## 联系我
 
-如果你有任何问题或只是想打个招呼，请随时联系我！
-
-- **电子邮件**: [hello@example.com](mailto:hello@example.com)
-- **Twitter**: [@example](https://twitter.com/example)
-- **GitHub**: [example](https://github.com/example)
+- **GitHub**：[github.com/nusky](https://github.com/nusky)（占位，待更新）
+- **Email**：[hello@nusky.cn](mailto:hello@nusky.cn)（占位）
 
 ---
 
-> "Logic will get you from A to B. Imagination will take you everywhere."  
-> — *Albert Einstein*
-
----
-*此页面由 AI 生成。*
+> 站点仍在装修中，感谢光临 ✌️

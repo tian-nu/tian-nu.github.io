@@ -100,6 +100,17 @@ sudo certbot --nginx -d nusky.cn -d www.nusky.cn
 > 当前自动化沙箱环境没有 root 权限（容器禁用了提权），无法代为安装 Nginx。
 > 备案通过后，请通过腾讯云控制台「登录」或 SSH 登录服务器执行上述步骤。
 
+## 上线验收清单（最终）
+
+- [ ] 备案通过，`nusky.cn` 解析到服务器（`dig nusky.cn` 返回 `42.194.151.133`）
+- [ ] `https://nusky.cn` 首页 200，标题为「Nusky 的小站」
+- [ ] 文章页 / 关于 / 归档 / 搜索 全部 200
+- [ ] HTTP 自动跳转 HTTPS（`curl -I http://nusky.cn` 返回 301）
+- [ ] 证书有效（`curl -vI https://nusky.cn` 无证书告警）
+- [ ] GitHub Pages 镜像/边缘内容子域名可访问
+- [ ] 写一篇新文章 push 后：Pages 与服务器都更新（自动部署生效）
+- [ ] 手机浏览器访问正常（响应式布局）
+
 ## 需要用户提供 / 确认
 
 - [ ] GitHub 用户名（用于仓库名、Pages 域名、社交链接）

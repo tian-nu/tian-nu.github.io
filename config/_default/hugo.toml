@@ -1,0 +1,13 @@
+baseURL                = "http://42.194.151.133:8090/"
+locale                 = "zh-CN"
+title                  = "Nusky 的小站"
+theme                  = "stack"
+defaultContentLanguage = "zh"
+hasCJKLanguage         = true
+
+[pagination]
+    pagerSize = 8
+
+[permalinks]
+    post = "/p/:slug/"
+    page = "/:slug/"

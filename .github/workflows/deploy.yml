@@ -1,0 +1,55 @@
+name: Deploy Blog
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.165.0"
+          extended: true
+
+      - name: Build
+        run: hugo --environment production --minify --gc
+
+      # 1) 部署到 GitHub Pages（备案期主站 / 后期镜像）
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # 2) 部署到服务器（备案通过后生效）
+      #    在仓库 Settings -> Secrets 配置：SERVER_HOST / SERVER_USER / SSH_KEY
+      #    服务器需先配置好 Nginx 与 GitHub 的 SSH 公钥（信任该 runner 的密钥）
+      - name: Deploy to server
+        if: ${{ secrets.SERVER_HOST != '' }}
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+          remote-host: ${{ secrets.SERVER_HOST }}
+          remote-user: ${{ secrets.SERVER_USER }}
+          source: ./public/
+          target: /var/www/nusky.cn
+          exclude: ".DS_Store"
+      # 说明：若不想从 GitHub runner 推服务器，也可改为服务器定时拉取构建产物。

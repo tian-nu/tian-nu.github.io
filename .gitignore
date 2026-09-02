@@ -1,0 +1,9 @@
+# Hugo 构建产物
+/public/
+/resources/_gen/
+
+# 其他
+.hugo_build.lock
+.DS_Store
+Thumbs.db
+*.swp

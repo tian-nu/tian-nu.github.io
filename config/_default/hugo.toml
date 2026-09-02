@@ -1,6 +1,6 @@
 baseURL                = "http://42.194.151.133:8090/"
 locale                 = "zh-CN"
-title                  = "Nusky 的小站"
+title                  = "天努的博客"
 theme                  = "stack"
 defaultContentLanguage = "zh"
 hasCJKLanguage         = true

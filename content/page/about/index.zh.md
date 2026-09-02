@@ -1,7 +1,7 @@
 ---
 title: 关于
 slug: about
-description: 关于本站及其作者的一切。
+description: 关于本站及其作者。
 date: 2026-09-02T12:00:00+08:00
 lastmod: 2026-09-02T12:00:00+08:00
 menu:
@@ -11,27 +11,28 @@ menu:
             icon: user
 ---
 
-## 关于本站
+## 你好，我是天努
 
-这是 **Nusky 的个人博客**（nusky.cn），记录我的折腾、学习和分享。
+一个热爱技术的开发者，喜欢探索新事物，记录学习与生活。
 
-博客采用 **Hugo + Stack 主题**，开源构建流程：
+### 技能栈
 
-- **主站**：运行在这台腾讯云服务器上（备案完成后正式上线）
+- **前端**：HTML, CSS, JavaScript
+- **后端**：Python, Node.js
+- **工具**：Git, VS Code
+- **其他**：Markdown, Linux
+
+### 关于本站
+
+本站基于 **Hugo + Stack 主题** 构建：
+
+- **主站**：腾讯云服务器（nusky.cn，备案成功后正式上线）
 - **镜像/边缘内容**：GitHub Pages
 - **发布方式**：写一篇 Markdown → `git push` → 自动构建部署
 
-## 关于作者
-
-你好，我是 Nusky 👋。喜欢捣鼓技术、折腾环境、积累有用的东西。
-
-> 此页面是**草稿**，正式上线前我会补齐个人信息——比如你的职业、兴趣、项目经历，以及有效的联系方式。
-
-## 联系我
+### 联系我
 
 - **GitHub**：[github.com/tian-nu](https://github.com/tian-nu)
-- **Email**：[hello@nusky.cn](mailto:hello@nusky.cn)（占位）
-
----
+- **Email**：待补充
 
 > 站点仍在装修中，感谢光临 ✌️

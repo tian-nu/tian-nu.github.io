@@ -11,27 +11,28 @@ menu:
             icon: user
 ---
 
-## About this site
+## Hi, I'm Tian Nu
 
-This is **Nusky's personal blog** (nusky.cn) — a place for my projects, notes and sharing.
+A developer who loves technology — exploring new things, recording learning and life.
 
-Built with **Hugo + Stack theme**, open-source workflow:
+### Skills
 
-- **Main site**: this Tencent Cloud server (live on nusky.cn after ICP registration)
+- **Front-end**: HTML, CSS, JavaScript
+- **Back-end**: Python, Node.js
+- **Tools**: Git, VS Code
+- **Others**: Markdown, Linux
+
+### About this site
+
+Built with **Hugo + Stack theme**:
+
+- **Main site**: Tencent Cloud server (nusky.cn, live after ICP registration)
 - **Mirror / edge content**: GitHub Pages
 - **Publishing**: write Markdown → `git push` → auto build & deploy
 
-## About the author
-
-Hi, I'm Nusky 👋. I enjoy tinkering with tech, breaking and fixing environments, and collecting useful things.
-
-> This page is a **draft** — I'll complete my bio, projects and contacts before the official launch.
-
-## Contact
+### Contact
 
 - **GitHub**: [github.com/tian-nu](https://github.com/tian-nu)
-- **Email**: [hello@nusky.cn](mailto:hello@nusky.cn) (placeholder)
-
----
+- **Email**: TBD
 
 > The site is still under construction. Thanks for visiting ✌️

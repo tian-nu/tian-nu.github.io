@@ -1,5 +1,5 @@
 ---
-title: "Hello, I'm Nusky 👋"
+title: "Hello, I'm Tian Nu 👋"
 description: "The first post of this blog — welcome!"
 slug: hello-nusky
 date: 2026-09-02T10:00:00+08:00

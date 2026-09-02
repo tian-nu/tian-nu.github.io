@@ -1,15 +1,28 @@
 ---
-title: "链接"
-slug: links
+title: "项目"
+slug: projects
 links:
-  - title: GitHub
-    description: GitHub 是世界上最大的软件开发平台。
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-  - title: TypeScript
-    description: TypeScript 是 JavaScript 的一个超集，它可以编译成纯 JavaScript。
-    website: https://www.typescriptlang.org
-    image: ts-logo-128.jpg
+  - title: librime
+    description: Rime Input Method Engine，中州韵输入法引擎核心库
+    website: https://github.com/tian-nu/librime
+  - title: weasel
+    description: 【小狼毫】Rime for Windows
+    website: https://github.com/tian-nu/weasel
+  - title: gm-campus-network
+    description: 校园网自动认证工具
+    website: https://github.com/tian-nu/gm-campus-network
+  - title: AutoAnswer
+    description: 学习通、开放大学自动答题脚本
+    website: https://github.com/tian-nu/AutoAnswer
+  - title: OUC-autoJS
+    description: 国家开放大学自动化脚本
+    website: https://github.com/tian-nu/OUC-autoJS
+  - title: Advanced-Turret
+    description: MCMOD-高级炮塔（Minecraft 模组）
+    website: https://github.com/tian-nu/Advanced-Turret
+  - title: tutorial-byAI
+    description: AI 写的教程
+    website: https://github.com/tian-nu/tutorial-byAI
 menu:
     main: 
         weight: -50
@@ -18,20 +31,4 @@ menu:
 comments: false
 ---
 
-要使用此功能，请在 frontmatter 中添加 `links` 部分。
-
-此页面的 frontmatter：
-
-```yaml
-links:
-  - title: GitHub
-    description: GitHub 是世界上最大的软件开发平台。
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-  - title: TypeScript
-    description: TypeScript 是 JavaScript 的一个超集，它可以编译成纯 JavaScript。
-    website: https://www.typescriptlang.org
-    image: ts-logo-128.jpg
-```
-
-`image` 字段支持本地和外部图像。
+我的 GitHub 项目，欢迎 Star ⭐。更多见 [github.com/tian-nu](https://github.com/tian-nu)。

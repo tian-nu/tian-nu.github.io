@@ -1,9 +1,23 @@
-# Nusky 的小站 — 项目说明与上线手册
+# 天努的博客 — 项目说明与上线手册
 
 基于 **Hugo + Stack 主题** 的个人博客。
 - 预览版（备案前调试）：`http://42.194.151.133:8090/`（服务器上 `hugo server` 常驻）
 - 正式域名：`nusky.cn`（ICP 备案中）
 - 目标架构：**服务器主站（Nginx） + GitHub Pages 镜像/边缘内容**
+
+---
+
+## 博客历史与迁移
+
+- 旧站：`tian-nu.github.io`（2024 年用 Jekyll 手搭的「天努的博客」），目前仍在 `https://nusky.cn` 在线
+- 已迁移：2 篇文章（Hello World、Jekyll 搭建教程）与关于页信息已迁入本仓库
+- 换代：新站（Hugo）push 到 `tian-nu.github.io` 后将接管 `nusky.cn`；旧 Jekyll 源码保留在仓库历史中
+- 旧站规划中的待办功能 → 新站功能待办：
+  - [ ] Giscus 评论（GitHub Discussions）
+  - [ ] 日记页（时间线 + 心情/天气标记）
+  - [ ] 备忘录（本地存储待办）
+  - [ ] 留言板
+  - [ ] 访问统计（文章数/标签数/运行天数）
 
 ---
 
@@ -123,11 +137,14 @@ sudo certbot --nginx -d nusky.cn -d www.nusky.cn
 - [ ] 写一篇新文章 push 后：Pages 与服务器都更新（自动部署生效）
 - [ ] 手机浏览器访问正常（响应式布局）
 
-## 需要用户提供 / 确认（已收齐大部分）
+## 需要用户确认 / 操作（截至 2026-09-02）
 
-- [x] GitHub 用户名：`tian-nu`（2026-09-02 提供）
-- [x] nusky.cn 的 DNS 服务商：腾讯云（DNSPod）
+- [x] GitHub 用户名：`tian-nu`
+- [x] nusky.cn 的 DNS 服务商：腾讯云 DNSPod（NS: `*.dnspod.net`）
 - [x] ICP 备案：已提交，进行中（2-3 周）
-- [ ] 预览版风格确认：`http://42.194.151.133:8090/` 看完：满意 / 要调整？
-- [ ] GitHub 操作（部署公钥 + 创建仓库）见上「首次上线步骤」
-- [ ] 腾讯云安全组放行 `TCP:8090`（看预览版需要）
+- [x] 8090 端口：安全组已验证外部可达
+- [x] `tian-nu.github.io`：已绑定自定义域名 `nusky.cn`（旧 Jekyll 博客，将作为新站部署目标）
+- [ ] DNS 补 2 条 A 记录：`185.199.108.153`、`185.199.109.153`
+- [ ] GitHub 添加部署公钥（见上「首次上线步骤」）
+- [ ] 仓库 Settings → Pages → Source 改为 `GitHub Actions`
+- [ ] 预览版风格确认：`http://42.194.151.133:8090/`

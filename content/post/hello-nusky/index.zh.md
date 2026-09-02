@@ -1,5 +1,5 @@
 ---
-title: "你好，我是 Nusky 👋"
+title: "你好，我是天努 👋"
 description: "这是博客的第一篇文章，欢迎来到我的小站。"
 slug: hello-nusky
 date: 2026-09-02T10:00:00+08:00

@@ -1,38 +1,34 @@
 ---
-title: Links
-slug: links
+title: Projects
+slug: projects
 links:
-  - title: GitHub
-    description: GitHub is the world's largest software development platform.
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-  - title: TypeScript
-    description: TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
-    website: https://www.typescriptlang.org
-    image: ts-logo-128.jpg
+  - title: librime
+    description: Rime Input Method Engine, the core library
+    website: https://github.com/tian-nu/librime
+  - title: weasel
+    description: 【小狼毫】Rime for Windows
+    website: https://github.com/tian-nu/weasel
+  - title: gm-campus-network
+    description: Campus network auto-authentication tool
+    website: https://github.com/tian-nu/gm-campus-network
+  - title: AutoAnswer
+    description: Auto-answer scripts for 学习通 / open university
+    website: https://github.com/tian-nu/AutoAnswer
+  - title: OUC-autoJS
+    description: Automation scripts for the National Open University
+    website: https://github.com/tian-nu/OUC-autoJS
+  - title: Advanced-Turret
+    description: MCMOD - Advanced Turret (Minecraft mod)
+    website: https://github.com/tian-nu/Advanced-Turret
+  - title: tutorial-byAI
+    description: Tutorials written by AI
+    website: https://github.com/tian-nu/tutorial-byAI
 menu:
     main: 
         weight: -50
         params:
             icon: link
-
 comments: false
 ---
 
-To use this feature, add `links` section to frontmatter.
-
-This page's frontmatter:
-
-```yaml
-links:
-  - title: GitHub
-    description: GitHub is the world's largest software development platform.
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-  - title: TypeScript
-    description: TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
-    website: https://www.typescriptlang.org
-    image: ts-logo-128.jpg
-```
-
-`image` field accepts both local and external images.
+My GitHub projects — stars welcome ⭐. See [github.com/tian-nu](https://github.com/tian-nu) for more.
